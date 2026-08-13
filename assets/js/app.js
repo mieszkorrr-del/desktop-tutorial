@@ -410,7 +410,7 @@ function runFridge() {
       Nic nie pasuje do tych produktów${fridgeMeal !== 'all' ? ` w kategorii „${MEALS[fridgeMeal]}”` : ''}.
       Spróbuj wpisać prostsze nazwy (np. „kurczak” zamiast „filet z piersi kurczaka”)
       albo wybierz „Wszystko”.
-    </div>`;
+    </div>` + externalSearch(text);
     return;
   }
 
@@ -423,7 +423,7 @@ function runFridge() {
       : `<div class="card empty">
           Z tych produktów nie złożę pełnego dania${fridgeMeal !== 'all' ? ` w kategorii „${MEALS[fridgeMeal]}”` : ''}.
           Odznacz „tylko bez zakupów", a pokażę przepisy, do których brakuje jednej–dwóch rzeczy.
-        </div>`;
+        </div>` + externalSearch(text);
     return;
   }
 
@@ -435,6 +435,46 @@ function runFridge() {
   if (almost.length) html += group('Blisko — brakuje 1–2 rzeczy', almost);
   if (rest.length) html += group('Warto dokupić kilka składników', rest);
   box.innerHTML = html;
+}
+
+/* Gdy w bazie nic nie pasuje — kierujemy do prawdziwych serwisów
+   kulinarnych z gotowym zapytaniem z Twoich składników. Aplikacja
+   niczego nie zmyśla: to są istniejące przepisy napisane przez ludzi. */
+function externalSearch(text) {
+  const items = text.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+  if (!items.length) return '';
+  const q = encodeURIComponent(items.join(' '));
+  const qFit = encodeURIComponent(items.join(' ') + ' przepis fit dietetyczny');
+
+  const sites = [
+    { name: 'Kwestia Smaku', url: `https://www.kwestiasmaku.com/szukaj?search_api_views_fulltext=${q}`,
+      note: 'Duży polski serwis kulinarny, przepisy sprawdzone przez redakcję.' },
+    { name: 'Aniagotuje.pl', url: `https://aniagotuje.pl/?s=${q}`,
+      note: 'Proste domowe przepisy z dokładnym opisem krok po kroku.' },
+    { name: 'Fit przepisy w Google', url: `https://www.google.com/search?q=${qFit}`,
+      note: 'Szeroki przegląd z całego internetu, z filtrem na wersje dietetyczne.' }
+  ];
+
+  return `<div class="card">
+    <h3 style="margin-top:0">Poszukaj poza aplikacją</h3>
+    <p class="muted small">
+      Nie wymyślam przepisów, których nie znam. Zamiast tego otworzę wyszukiwarkę
+      z Twoimi składnikami w prawdziwych serwisach kulinarnych — znajdziesz tam
+      przepisy napisane przez ludzi, które faktycznie ktoś ugotował.
+    </p>
+    <div class="pick-list">
+      ${sites.map(s => `
+        <a class="pick" href="${s.url}" target="_blank" rel="noopener noreferrer"
+           style="text-decoration:none;color:inherit">
+          <span><strong>${esc(s.name)}</strong><br><span class="muted small">${esc(s.note)}</span></span>
+          <span class="muted">↗</span>
+        </a>`).join('')}
+    </div>
+    <p class="muted small" style="margin:.7rem 0 0">
+      Znajdziesz coś dobrego? Przepisz to w zakładce <strong>Przepisy → Dodaj własny przepis</strong>,
+      a wskoczy do wyszukiwarki z lodówki i do planu tygodnia.
+    </p>
+  </div>`;
 }
 
 function group(title, list) {
