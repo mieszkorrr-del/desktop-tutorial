@@ -7,6 +7,22 @@ const norm = s => (s || '').toString().toLowerCase().trim();
 const today = () => new Date().toISOString().slice(0, 10);
 const fmt = n => Number.isInteger(n) ? String(n) : n.toFixed(1).replace('.', ',');
 
+/* Pola wagi przyjmują i przecinek, i kropkę — po polsku naturalnie pisze
+   się "92,4", a pole type="number" odrzuciłoby przecinek razem z resztą
+   wpisu, zamieniając 92,4 na 924. */
+function parseNum(value) {
+  const n = parseFloat(String(value).replace(',', '.').replace(/\s/g, ''));
+  return Number.isFinite(n) ? n : null;
+}
+
+/* Aktualna waga to zawsze najnowszy pomiar według DATY, nie ostatnio
+   wpisany. Bez tego uzupełnienie historii wstecz przestawiałoby profil
+   na starą wagę. */
+function latestWeight(weights) {
+  if (!weights.length) return null;
+  return [...weights].sort((a, b) => a.date.localeCompare(b.date)).at(-1).kg;
+}
+
 /* ============================================================
    NAWIGACJA
    ============================================================ */
@@ -15,6 +31,7 @@ function showView(name) {
   $$('.tab').forEach(t => t.classList.toggle('is-active', t.dataset.view === name));
   window.scrollTo({ top: 0, behavior: 'instant' });
   if (name === 'panel') renderPanel();
+  if (name === 'treningi') renderTraining();
   if (name === 'plan') renderPlan();
   if (name === 'zakupy') renderShopping();
   if (name === 'postepy') renderProgress();
@@ -83,6 +100,13 @@ function renderPanel() {
   }
   if (lost !== null && lost > 0) {
     stats.push(card('Zrzucone', fmt(lost), 'kg', 'od pierwszego pomiaru', 'good'));
+  }
+  const burnedToday = s.workouts.filter(x => x.date === today()).reduce((t, x) => t + x.kcal, 0);
+  if (burnedToday) {
+    /* Świadomie NIE dodajemy tego do puli kalorii na jedzenie — szacunki
+       spalania zawyżają, a "odjadanie" treningu to najczęstszy powód
+       stojącej wagi mimo regularnych ćwiczeń. */
+    stats.push(card('Trening dziś', burnedToday, 'kcal', 'nie doliczaj tego do jedzenia', 'good'));
   }
   $('#panel-stats').innerHTML = stats.join('');
 
@@ -253,6 +277,177 @@ function fridgeCard(m) {
       ? `<div class="missing">Brakuje: ${m.missing.map(i => esc(i.name)).join(', ')}</div>`
       : `<div class="have">✔ Komplet — możesz gotować</div>`}
   </article>`;
+}
+
+/* ============================================================
+   TRENINGI
+   ============================================================ */
+const INTENSITY = {
+  biezn: [
+    { id: 'marsz', label: 'Marsz 4,5–5 km/h, płasko' },
+    { id: 'marsz_szybki', label: 'Marsz szybki 5,5–6 km/h' },
+    { id: 'marsz_nachylenie', label: 'Marsz z nachyleniem 4–6%' },
+    { id: 'marsz_stromy', label: 'Marsz stromy 8–12%' },
+    { id: 'trucht', label: 'Trucht 8 km/h' }
+  ],
+  sila: [{ id: 'sila', label: 'Trening oporowy' }],
+  spacer: [
+    { id: 'marsz_wolny', label: 'Spacer spokojny' },
+    { id: 'marsz', label: 'Spacer żwawy' }
+  ]
+};
+
+/* Kalorie = MET × masa ciała × czas. Liczymy z Twojej wagi, dlatego wynik
+   różni się od licznika bieżni, który masy nie zna. */
+function burned(metKey, minutes, weight) {
+  if (!weight || !minutes) return 0;
+  return Math.round((MET[metKey] || 4) * weight * (minutes / 60));
+}
+
+function trainingWeek() {
+  const s = Store.get();
+  if (!s.trainingStart) return 1;
+  const days = Math.floor((Date.parse(today()) - Date.parse(s.trainingStart)) / 864e5);
+  return Math.min(12, Math.max(1, Math.floor(days / 7) + 1));
+}
+
+function fillIntensity() {
+  const kind = $('#t-kind').value;
+  $('#t-int').innerHTML = INTENSITY[kind].map(i => `<option value="${i.id}">${i.label}</option>`).join('');
+  previewBurn();
+}
+
+function previewBurn() {
+  const w = Store.get().profile.weight;
+  const min = parseNum($('#t-min').value);
+  if (!w) { $('#t-preview').textContent = 'Uzupełnij wagę w Profilu, żeby liczyć spalone kalorie.'; return; }
+  if (!min) { $('#t-preview').textContent = ''; return; }
+  $('#t-preview').textContent =
+    `Szacunek: ok. ${burned($('#t-int').value, min, w)} kcal przy masie ${fmt(w)} kg.`;
+}
+
+$('#t-kind').addEventListener('change', fillIntensity);
+$('#t-int').addEventListener('change', previewBurn);
+$('#t-min').addEventListener('input', previewBurn);
+
+$('#t-add').addEventListener('click', () => {
+  const min = parseNum($('#t-min').value);
+  if (!min || min < 1 || min > 300) { alert('Podaj czas treningu w minutach (1–300).'); return; }
+  const kind = $('#t-kind').value;
+  const metKey = $('#t-int').value;
+  const w = Store.get().profile.weight;
+
+  Store.update(s => {
+    if (!s.trainingStart) s.trainingStart = today();
+    s.workouts.push({
+      date: today(), kind, minutes: min,
+      kcal: burned(metKey, min, w),
+      detail: (INTENSITY[kind].find(i => i.id === metKey) || {}).label || ''
+    });
+  });
+  $('#t-min').value = '';
+  renderTraining();
+  renderPanel();
+});
+
+let ttipIndex = Math.floor(Math.random() * TRAINING_TIPS.length);
+$('#ttip-next').addEventListener('click', () => {
+  ttipIndex++;
+  $('#training-tip').textContent = TRAINING_TIPS[ttipIndex % TRAINING_TIPS.length];
+});
+
+$('#training-history').addEventListener('click', e => {
+  const btn = e.target.closest('[data-del-workout]');
+  if (!btn) return;
+  Store.update(s => { s.workouts.splice(+btn.dataset.delWorkout, 1); });
+  renderTraining();
+  renderPanel();
+});
+
+function renderTraining() {
+  const s = Store.get();
+  const w = s.profile.weight;
+  const bmi = Calc.bmi(s.profile);
+
+  /* Wprowadzenie dobrane do masy ciała — przy BMI powyżej 30 plan
+     świadomie omija bieganie i skoki. */
+  $('#training-intro').innerHTML = `
+    <h2>Twój plan: bieżnia + siła w domu</h2>
+    ${bmi && bmi >= 30 ? `
+      <p class="tip-box"><strong>Dlaczego marsz, a nie bieg.</strong>
+      Przy BMI ${bmi} każdy krok biegu obciąża kolano siłą rzędu 3–4× masy ciała,
+      marsz — około 1,2×. Marsz z nachyleniem daje porównywalne spalanie
+      przy ułamku obciążenia stawów. Bieg wchodzi do planu dopiero w 10. tygodniu
+      i tylko wtedy, gdy nie masz bólu kolan ani stóp.</p>
+      <p class="muted small">Przy BMI powyżej 30 warto zrobić podstawowe badania
+      i skonsultować start z lekarzem — zwłaszcza jeśli masz nadciśnienie,
+      cukrzycę, problemy z sercem albo od dawna nie ćwiczyłeś.</p>` : ''}
+    <p class="muted">Trzy do czterech sesji bieżni tygodniowo plus dwa treningi siłowe.
+    Cardio robi deficyt, siła decyduje o tym, czy tracisz tłuszcz, czy mięśnie.</p>`;
+
+  /* statystyki */
+  const week = trainingWeek();
+  const wk = new Date(); wk.setDate(wk.getDate() - 6);
+  const weekStart = wk.toISOString().slice(0, 10);
+  const last7 = s.workouts.filter(x => x.date >= weekStart);
+  const kcal7 = last7.reduce((t, x) => t + x.kcal, 0);
+  const min7 = last7.reduce((t, x) => t + x.minutes, 0);
+  const todayKcal = s.workouts.filter(x => x.date === today()).reduce((t, x) => t + x.kcal, 0);
+
+  $('#training-stats').innerHTML = [
+    card('Tydzień programu', week, `z 12`, TREADMILL[week - 1].desc.slice(0, 60) + '…'),
+    card('Sesje (7 dni)', last7.length, '', `${min7} minut łącznie`),
+    card('Spalone (7 dni)', kcal7, 'kcal', kcal7 ? `ok. ${(kcal7 / 7700).toFixed(2)} kg tłuszczu` : ''),
+    card('Spalone dziś', todayKcal, 'kcal', todayKcal ? 'dobra robota' : 'jeszcze nic', todayKcal ? 'good' : '')
+  ].join('');
+
+  /* aktualny tydzień bieżni */
+  const t = TREADMILL[week - 1];
+  const est = w ? burned(t.met, t.minutes, w) : null;
+  $('#treadmill-now').innerHTML = `
+    <div class="tip-box">
+      <strong>Tydzień ${t.week}:</strong> ${t.sessions} sesje × ${t.minutes} min ·
+      prędkość ${t.speed} km/h · nachylenie ${t.incline}
+      ${est ? `<br><span class="muted">Szacunkowo ok. ${est} kcal na sesję, ${est * t.sessions} kcal w tygodniu.</span>` : ''}
+      <p style="margin:.6rem 0 0">${t.desc}</p>
+    </div>
+    ${!s.trainingStart ? '<p class="muted small">Program wystartuje przy pierwszym zapisanym treningu.</p>' : ''}`;
+
+  $('#treadmill-all').innerHTML = TREADMILL.map(x => `
+    <div class="today-row ${x.week === week ? '' : 'muted'}">
+      <span class="meal">Tydzień ${x.week}</span>
+      <span>${x.sessions} × ${x.minutes} min · ${x.speed} km/h · ${x.incline}</span>
+    </div>`).join('');
+
+  /* siła */
+  const block = (key, el) => {
+    const b = STRENGTH[key];
+    $(el).innerHTML = `<h2>${esc(b.name)}</h2>
+      ${b.exercises.map(x => `
+        <details class="slot" style="margin-bottom:.4rem">
+          <summary><strong>${esc(x.name)}</strong> <span class="muted">· ${x.sets}</span></summary>
+          <p style="margin:.5rem 0 .2rem">${esc(x.how)}</p>
+          <p class="muted small" style="margin:0">${esc(x.why)}</p>
+        </details>`).join('')}
+      <p class="muted small">Przerwa między seriami 60–90 s. Ostatnie 2 powtórzenia mają być trudne.</p>`;
+  };
+  block('A', '#strength-a');
+  block('B', '#strength-b');
+
+  $('#week-template').innerHTML = WEEK_TEMPLATE.map(d => `
+    <div class="today-row"><span class="meal">${d.day}</span><span>${d.plan}</span></div>`).join('');
+
+  $('#training-tip').textContent = TRAINING_TIPS[ttipIndex % TRAINING_TIPS.length];
+
+  $('#training-history').innerHTML = s.workouts.length
+    ? [...s.workouts].map((x, i) => ({ x, i })).reverse().slice(0, 30).map(({ x, i }) => `
+        <div class="hist-row">
+          <span>${x.date}</span>
+          <span>${esc(x.detail)} · ${x.minutes} min</span>
+          <span><strong>${x.kcal} kcal</strong></span>
+          <button class="hist-del" data-del-workout="${i}">usuń</button>
+        </div>`).join('')
+    : '<div class="empty">Brak zapisanych treningów. Pierwszy wpis uruchamia program.</div>';
 }
 
 /* ============================================================
@@ -513,7 +708,7 @@ function renderPlan() {
     let cls = '', note = '';
     if (goal && sum > 0) {
       if (sum > goal) { cls = 'over'; note = `${sum - goal} kcal ponad cel`; }
-      else if (sum < goal - 250) { cls = 'over'; note = `${goal - sum} kcal poniżej celu — dołóż posiłek`; }
+      else if (sum < goal - 250) { cls = 'under'; note = `${goal - sum} kcal poniżej celu — dołóż posiłek`; }
       else { cls = 'ok'; note = 'w celu'; }
     }
     return `<div class="day">
@@ -706,7 +901,9 @@ function buildShopping() {
 }
 
 function renderShopping() {
-  if (!shoppingCache.length) buildShopping();
+  /* Przebudowa przy każdym wejściu — wcześniej lista zostawała
+     nieaktualna po zmianie planu i można było wyjść z nią do sklepu. */
+  buildShopping();
   const s = Store.get();
 
   if (!shoppingCache.length) {
@@ -749,18 +946,19 @@ $('#shop-list').addEventListener('change', e => {
    ============================================================ */
 $('#w-add').addEventListener('click', () => {
   const date = $('#w-date').value || today();
-  const kg = parseFloat(String($('#w-kg').value).replace(',', '.'));
-  if (!kg || kg < 20 || kg > 400) {
-    alert('Podaj wagę w kilogramach, np. 92,4.');
+  const kg = parseNum($('#w-kg').value);
+  if (kg === null || kg < 20 || kg > 400) {
+    alert('Podaj wagę w kilogramach, np. 92,4 (przecinek i kropka działają tak samo).');
     return;
   }
   Store.update(s => {
     const existing = s.weights.find(w => w.date === date);
     if (existing) existing.kg = kg;
     else s.weights.push({ date, kg });
-    s.profile.weight = kg;                 // najnowszy pomiar = aktualna waga
+    s.profile.weight = latestWeight(s.weights);
   });
   $('#w-kg').value = '';
+  $('#w-date').value = today();
   renderProgress();
 });
 
@@ -792,7 +990,12 @@ function renderProgress() {
 $('#w-history').addEventListener('click', e => {
   const btn = e.target.closest('[data-del-weight]');
   if (!btn) return;
-  Store.update(s => { s.weights = s.weights.filter(w => w.date !== btn.dataset.delWeight); });
+  Store.update(s => {
+    s.weights = s.weights.filter(w => w.date !== btn.dataset.delWeight);
+    // po skasowaniu błędnego wpisu profil wraca do najnowszego pomiaru
+    const latest = latestWeight(s.weights);
+    if (latest !== null) s.profile.weight = latest;
+  });
   renderProgress();
 });
 
@@ -852,6 +1055,7 @@ function renderProfile() {
   $('#p-height').value = p.height ?? '';
   $('#p-weight').value = p.weight ?? '';
   $('#p-target').value = p.target ?? '';
+  $('#p-goal').value = p.customGoal ?? '';
 
   renderSummary();
 }
@@ -868,7 +1072,13 @@ function renderSummary() {
 
   const eta = weeks ? new Date(Date.now() + weeks * 7 * 864e5).toISOString().slice(0, 10) : null;
 
+  const suggested = Calc.suggestedGoal(p);
+
   $('#p-summary').innerHTML = `
+    ${p.customGoal ? `<p class="tip-box"><strong>Cel ustawiony ręcznie: ${p.customGoal} kcal.</strong>
+      Wzór podpowiadał ${suggested} kcal
+      (${p.customGoal < suggested ? `o ${suggested - p.customGoal} kcal mniej` : `o ${p.customGoal - suggested} kcal więcej`}).
+      Wyczyść pole „własny cel", żeby wrócić do wyliczenia.</p>` : ''}
     <p><strong>Spoczynkowa przemiana materii (BMR):</strong> ${bmr} kcal —
       tyle spalasz leżąc cały dzień w łóżku.</p>
     <p><strong>Całkowite zapotrzebowanie (TDEE):</strong> ${tdee} kcal —
@@ -885,15 +1095,64 @@ function renderSummary() {
 }
 
 $('#p-save').addEventListener('click', () => {
+  const age = parseNum($('#p-age').value);
+  const height = parseNum($('#p-height').value);
+  const weight = parseNum($('#p-weight').value);
+  const target = parseNum($('#p-target').value);
+  const customGoal = parseNum($('#p-goal').value);
+
+  /* Walidacja zakresów. Bez niej literówka (np. 924 zamiast 92,4)
+     przechodziła do wyliczeń i dawała absurdalne zapotrzebowanie. */
+  const problems = [];
+  if (age !== null && (age < 16 || age > 100)) problems.push('Wiek podaj w latach, w zakresie 16–100.');
+  if (height !== null && (height < 120 || height > 230)) problems.push('Wzrost podaj w centymetrach, w zakresie 120–230.');
+  if (weight !== null && (weight < 30 || weight > 400)) problems.push('Wagę podaj w kilogramach, w zakresie 30–400 (np. 92,4).');
+  if (target !== null && (target < 30 || target > 400)) problems.push('Wagę docelową podaj w kilogramach, w zakresie 30–400.');
+  if (customGoal !== null && (customGoal < 800 || customGoal > 6000)) {
+    problems.push('Własny cel kaloryczny podaj w kcal, w zakresie 800–6000.');
+  }
+  if (problems.length) {
+    alert(problems.join('\n'));
+    return;
+  }
+
+  /* Ostrzeżenie, gdy ręczny cel schodzi poniżej spoczynkowej przemiany
+     materii — to poziom, przy którym organizm zaczyna oddawać mięśnie. */
+  if (customGoal !== null && weight && height && age) {
+    const bmr = Calc.bmr({ sex: $('#p-sex').value, weight, height, age });
+    if (bmr && customGoal < bmr) {
+      const ok = confirm(
+        `Uwaga: ${customGoal} kcal to mniej niż Twoja spoczynkowa przemiana materii (${bmr} kcal) — ` +
+        `czyli mniej, niż potrzebujesz leżąc cały dzień w łóżku.\n\n` +
+        `Przy takim poziomie organizm zaczyna oddawać mięśnie, spada energia i wypadają włosy, ` +
+        `a waga i tak zwykle staje po kilku tygodniach. Szybciej nie znaczy skuteczniej.\n\n` +
+        `Ustawić mimo to?`);
+      if (!ok) return;
+    }
+  }
+
+  /* Ostrzeżenie, gdy cel schodzi poniżej granicy zdrowej masy ciała.
+     Narzędzie do odchudzania musi to powiedzieć, zanim policzy plan. */
+  if (target !== null && height) {
+    const targetBmi = target / Math.pow(height / 100, 2);
+    if (targetBmi < 18.5) {
+      const minHealthy = (18.5 * Math.pow(height / 100, 2)).toFixed(1).replace('.', ',');
+      const ok = confirm(
+        `Uwaga: waga docelowa ${fmt(target)} kg przy wzroście ${height} cm daje BMI ${targetBmi.toFixed(1)}, ` +
+        `czyli niedowagę.\n\nDolna granica zdrowej masy ciała to przy Twoim wzroście ok. ${minHealthy} kg. ` +
+        `Schodzenie niżej nie jest celem zdrowotnym i warto omówić je z lekarzem lub dietetykiem.\n\n` +
+        `Zapisać mimo to?`);
+      if (!ok) return;
+    }
+  }
+
   Store.update(s => {
     s.profile = {
       sex: $('#p-sex').value,
-      age: +$('#p-age').value || null,
-      height: +$('#p-height').value || null,
-      weight: parseFloat(String($('#p-weight').value).replace(',', '.')) || null,
-      target: parseFloat(String($('#p-target').value).replace(',', '.')) || null,
+      age, height, weight, target,
       activity: +$('#p-activity').value,
-      pace: +$('#p-pace').value
+      pace: +$('#p-pace').value,
+      customGoal
     };
     // pierwszy pomiar wagi zakładamy na dziś, jeśli dziennik jest pusty
     if (s.profile.weight && !s.weights.length) {
@@ -946,6 +1205,7 @@ function esc(s) {
 
 initTagFilter();
 renderRecipes();
+fillIntensity();
 renderPanel();
 $('#fridge-input').value = Store.get().fridge || '';
 $('#w-date').value = today();

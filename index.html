@@ -29,6 +29,7 @@
     <button class="tab is-active" data-view="panel">Panel</button>
     <button class="tab" data-view="lodowka">Co mam w lodówce</button>
     <button class="tab" data-view="przepisy">Przepisy</button>
+    <button class="tab" data-view="treningi">Treningi</button>
     <button class="tab" data-view="plan">Plan tygodnia</button>
     <button class="tab" data-view="zakupy">Zakupy</button>
     <button class="tab" data-view="postepy">Postępy</button>
@@ -90,6 +91,64 @@
       </div>
     </div>
     <div id="fridge-results"></div>
+  </section>
+
+  <!-- ======================= TRENINGI ======================= -->
+  <section class="view" id="view-treningi">
+    <div class="card" id="training-intro"></div>
+
+    <div class="stat-grid" id="training-stats"></div>
+
+    <div class="card">
+      <h2>Zapisz trening</h2>
+      <div class="row row-wrap">
+        <label class="field">Rodzaj
+          <select id="t-kind">
+            <option value="biezn">Bieżnia</option>
+            <option value="sila">Trening siłowy</option>
+            <option value="spacer">Spacer na zewnątrz</option>
+          </select>
+        </label>
+        <label class="field">Minuty
+          <input type="text" inputmode="numeric" id="t-min" placeholder="np. 30">
+        </label>
+        <label class="field">Intensywność
+          <select id="t-int"></select>
+        </label>
+        <button class="btn btn-primary" id="t-add">Zapisz</button>
+      </div>
+      <p class="muted small" id="t-preview"></p>
+    </div>
+
+    <div class="card">
+      <h2>Program bieżni — 12 tygodni</h2>
+      <div id="treadmill-now"></div>
+      <details style="margin-top:.8rem">
+        <summary class="muted small">Pokaż cały program</summary>
+        <div id="treadmill-all"></div>
+      </details>
+    </div>
+
+    <div class="cols">
+      <div class="card" id="strength-a"></div>
+      <div class="card" id="strength-b"></div>
+    </div>
+
+    <div class="card">
+      <h2>Tydzień treningowy</h2>
+      <div id="week-template"></div>
+    </div>
+
+    <div class="card tip-card">
+      <h2>Trener — trening</h2>
+      <p id="training-tip" class="tip-text"></p>
+      <button class="btn btn-ghost btn-sm" id="ttip-next">Następna wskazówka</button>
+    </div>
+
+    <div class="card">
+      <h2>Historia treningów</h2>
+      <div id="training-history"></div>
+    </div>
   </section>
 
   <!-- ======================= PRZEPISY ======================= -->
@@ -162,7 +221,7 @@
           <input type="date" id="w-date">
         </label>
         <label class="field">Waga (kg)
-          <input type="number" id="w-kg" step="0.1" min="20" max="400" placeholder="np. 92,4">
+          <input type="text" inputmode="decimal" id="w-kg" placeholder="np. 92,4">
         </label>
         <button class="btn btn-primary" id="w-add">Zapisz pomiar</button>
       </div>
@@ -196,10 +255,10 @@
           <input type="number" id="p-height" min="120" max="230">
         </label>
         <label class="field">Waga teraz (kg)
-          <input type="number" id="p-weight" step="0.1" min="30" max="400">
+          <input type="text" inputmode="decimal" id="p-weight" placeholder="np. 92,4">
         </label>
         <label class="field">Waga docelowa (kg)
-          <input type="number" id="p-target" step="0.1" min="30" max="400">
+          <input type="text" inputmode="decimal" id="p-target" placeholder="np. 85">
         </label>
         <label class="field">Aktywność
           <select id="p-activity"></select>
@@ -207,7 +266,15 @@
         <label class="field">Tempo chudnięcia
           <select id="p-pace"></select>
         </label>
+        <label class="field">Własny cel kcal (opcjonalnie)
+          <input type="text" inputmode="numeric" id="p-goal" placeholder="np. 2100">
+        </label>
       </div>
+      <p class="muted small">
+        Pole „własny cel" nadpisuje wyliczenie wzorem. Zostaw puste, żeby
+        aplikacja liczyła sama. Wpisz wartość, jeśli chcesz zejść niżej lub
+        wyżej niż podpowiedź — np. 2100 zamiast 2300.
+      </p>
       <button class="btn btn-primary" id="p-save">Zapisz profil</button>
       <div id="p-summary" class="summary"></div>
     </div>
@@ -253,6 +320,7 @@
 </div>
 
 <script src="assets/js/data.js"></script>
+<script src="assets/js/training.js"></script>
 <script src="assets/js/store.js"></script>
 <script src="assets/js/app.js"></script>
 <script>

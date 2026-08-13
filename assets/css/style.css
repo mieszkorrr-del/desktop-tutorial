@@ -103,7 +103,9 @@ main {
 /* ---------- Formularze ---------- */
 .field { display: flex; flex-direction: column; gap: .3rem; font-size: .82rem; color: var(--ink-soft); }
 input, select, textarea {
-  font: inherit; color: var(--ink);
+  /* 16px to próg, poniżej którego Safari na iOS przybliża widok przy
+     każdym dotknięciu pola — stąd sztywny rozmiar zamiast dziedziczenia */
+  font: inherit; font-size: 16px; color: var(--ink);
   background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: 9px; padding: .5rem .65rem;
@@ -228,6 +230,7 @@ input:focus, select:focus, textarea:focus {
 .slot.filled { border-style: solid; }
 .day-total { font-size: .82rem; font-weight: 600; padding-top: .4rem; border-top: 1px solid var(--line); }
 .day-total.over { color: var(--warn); }
+.day-total.under { color: #7d7ac4; }
 .day-total.ok { color: var(--accent-ink); }
 
 /* ---------- Zakupy ---------- */

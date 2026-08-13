@@ -11,7 +11,8 @@ const DEFAULT_STATE = {
     weight: null,
     target: null,
     activity: 1.375,
-    pace: 0.5
+    pace: 0.5,
+    customGoal: null      // ręcznie ustawiony cel kcal — ma pierwszeństwo
   },
   weights: [],          // [{ date: 'YYYY-MM-DD', kg: 92.4 }]
   favorites: [],        // [recipeId]
@@ -19,7 +20,9 @@ const DEFAULT_STATE = {
   plan: {},             // { '0-obiad': recipeId }  (dzień 0–6)
   bought: [],           // odhaczone pozycje listy zakupów
   fridge: '',           // ostatnia zawartość lodówki
-  habits: {}            // { 'YYYY-MM-DD': { water: true, steps: true, protein: true } }
+  habits: {},           // { 'YYYY-MM-DD': { water: true, steps: true, protein: true } }
+  workouts: [],         // [{ date, kind: 'biezn'|'sila', minutes, kcal, detail }]
+  trainingStart: null   // data startu 12-tygodniowego programu bieżni
 };
 
 let state = load();
@@ -106,6 +109,9 @@ const Calc = {
   /* Cel kaloryczny = TDEE minus deficyt, ale nigdy poniżej BMR — schodzenie
      pod spoczynkową przemianę materii to prosta droga do utraty mięśni. */
   goal(profile) {
+    /* Ręcznie ustawiony cel wygrywa ze wzorem — to Twoja decyzja,
+       aplikacja ma ją respektować, a nie nadpisywać. */
+    if (profile.customGoal) return profile.customGoal;
     const t = this.tdee(profile);
     if (!t) return null;
     const pace = PACE.find(p => p.id === Number(profile.pace)) || PACE[1];
@@ -113,10 +119,21 @@ const Calc = {
     return Math.max(t - pace.deficit, floor);
   },
 
+  /* Cel wyliczony ze wzoru — potrzebny, by pokazać różnicę wobec
+     celu ustawionego ręcznie. */
+  suggestedGoal(profile) {
+    return this.goal({ ...profile, customGoal: null });
+  },
+
+  /* Białko liczymy od masy docelowej, nie aktualnej. Przy otyłości
+     nadmiar masy to głównie tkanka tłuszczowa, która nie potrzebuje
+     białka — liczenie od 108 kg dałoby 194 g dziennie, czyli porcję
+     nie do zjedzenia i bez uzasadnienia. */
   macros(profile) {
     const kcal = this.goal(profile);
     if (!kcal || !profile.weight) return null;
-    const protein = Math.round(profile.weight * 1.8);          // ochrona mięśni
+    const ref = profile.target && profile.target < profile.weight ? profile.target : profile.weight;
+    const protein = Math.round(ref * 1.8);
     const fat = Math.round((kcal * 0.27) / 9);                 // ~27% energii
     const carbs = Math.round((kcal - protein * 4 - fat * 9) / 4);
     return { protein, fat, carbs: Math.max(carbs, 0) };
