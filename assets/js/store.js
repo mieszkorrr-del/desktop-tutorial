@@ -18,7 +18,8 @@ const DEFAULT_STATE = {
   favorites: [],        // [recipeId]
   custom: [],           // własne przepisy (ten sam kształt co w RECIPES)
   plan: {},             // { '0-obiad': recipeId }  (dzień 0–6)
-  bought: [],           // odhaczone pozycje listy zakupów
+  bought: [],           // odhaczone pozycje listy zakupów (dla planSig)
+  planSig: null,        // odcisk planu, dla którego zrobiono odhaczenia
   fridge: '',           // ostatnia zawartość lodówki
   habits: {},           // { 'YYYY-MM-DD': { water: true, steps: true, protein: true } }
   workouts: [],         // [{ date, kind: 'biezn'|'sila', minutes, kcal, detail }]
@@ -154,11 +155,35 @@ const Calc = {
     return 'otyłość III stopnia';
   },
 
-  /* Prognoza: ile tygodni do celu przy wybranym tempie. */
+  /* Realne tempo chudnięcia wynika z FAKTYCZNEGO deficytu, a nie z tego,
+     co wybrano w formularzu. Gdy cel zostaje podniesiony do podłogi BMR,
+     deficyt jest mniejszy — i prognoza musi to uwzględnić, inaczej
+     obiecuje termin nawet dwukrotnie za krótki. */
+  realDeficit(profile) {
+    const t = this.tdee(profile), g = this.goal(profile);
+    return t && g ? Math.max(t - g, 0) : null;
+  },
+
+  /* 7700 kcal ≈ 1 kg tkanki tłuszczowej — przybliżenie, ale powszechnie
+     przyjęte i wystarczające do prognozy. */
+  realPace(profile) {
+    const d = this.realDeficit(profile);
+    return d === null ? null : +((d * 7) / 7700).toFixed(2);
+  },
+
+  /* Czy wybrane tempo jest w ogóle osiągalne bez schodzenia poniżej BMR. */
+  paceClipped(profile) {
+    const chosen = PACE.find(p => p.id === Number(profile.pace)) || PACE[1];
+    const real = this.realPace(profile);
+    return real !== null && real < chosen.id - 0.05 ? { chosen: chosen.id, real } : null;
+  },
+
   weeksToGoal(profile) {
-    const { weight, target, pace } = profile;
+    const { weight, target } = profile;
     if (!weight || !target || weight <= target) return null;
-    return Math.ceil((weight - target) / Number(pace || 0.5));
+    const pace = this.realPace(profile);
+    if (!pace || pace <= 0) return null;
+    return Math.ceil((weight - target) / pace);
   },
 
   /* Średnia krocząca z 7 dni — jedyna sensowna miara postępu. */

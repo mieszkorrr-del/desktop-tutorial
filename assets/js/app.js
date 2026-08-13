@@ -4,8 +4,17 @@ const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 
 const norm = s => (s || '').toString().toLowerCase().trim();
-const today = () => new Date().toISOString().slice(0, 10);
+/* Data lokalna, nie UTC. toISOString() zwraca czas UTC, więc w Polsce
+   między północą a 2:00 nawyki i pomiary zapisywałyby się na wczoraj —
+   a "dzisiejszy plan" pokazywał już kolejny dzień. */
+const today = () => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+};
 const fmt = n => Number.isInteger(n) ? String(n) : n.toFixed(1).replace('.', ',');
+/* Tempo chudnięcia podajemy z dwoma miejscami — przy zaokrągleniu do
+   jednego 0,75 kg/tydzień wyświetlało się jako 0,8. */
+const fmt2 = n => Number.isInteger(n) ? String(n) : String(+n.toFixed(2)).replace('.', ',');
 
 /* Pola wagi przyjmują i przecinek, i kropkę — po polsku naturalnie pisze
    się "92,4", a pole type="number" odrzuciłoby przecinek razem z resztą
@@ -144,7 +153,101 @@ function renderPanel() {
       <input type="checkbox" data-habit="${k}" ${h[k] ? 'checked' : ''}> ${label}
     </label>`).join('');
 
+  /* zadanie dnia */
+  const task = dailyTask(today());
+  $('#panel-task').innerHTML = `
+    <p class="muted small" style="margin:.9rem 0 .4rem">Zadanie na dziś</p>
+    <label class="habit ${h.task ? 'done' : ''}">
+      <input type="checkbox" data-habit="task" ${h.task ? 'checked' : ''}>
+      <span>${esc(task.t)}</span>
+    </label>
+    <p class="muted small" style="margin:.4rem 0 0">${esc(task.why)}</p>`;
+
+  renderMascot();
   $('#panel-tip').textContent = TIPS[tipIndex % TIPS.length];
+}
+
+/* Dzień jest "pełny", gdy odhaczone są trzy nawyki i zadanie dnia.
+   Seria liczy kolejne pełne dni wstecz od dziś. */
+function dayComplete(h) {
+  return !!(h && h.water && h.steps && h.protein && h.task);
+}
+
+function streakDays() {
+  const s = Store.get();
+  let n = 0;
+  const d = new Date();
+  // dzisiaj liczymy tylko jeśli już zamknięty — inaczej seria migałaby w ciągu dnia
+  if (!dayComplete(s.habits[today()])) d.setDate(d.getDate() - 1);
+  for (;;) {
+    const key = d.toISOString().slice(0, 10);
+    if (!dayComplete(s.habits[key])) break;
+    n++;
+    d.setDate(d.getDate() - 1);
+  }
+  return n;
+}
+
+/* Maskotka mówi to, co w danym momencie ma sens — najpierw przypomina
+   o niezrobionych rzeczach, potem chwali. Kolejność jest celowa:
+   konkretne przypomnienie działa lepiej niż ogólne "dasz radę". */
+function mascotLine(h, done, streak) {
+  const s = Store.get();
+  const hour = new Date().getHours();
+  const trainedToday = s.workouts.some(w => w.date === today());
+  const weighedToday = s.weights.some(w => w.date === today());
+
+  const pool = [];
+
+  if (done === 4) {
+    pool.push('Komplet! Tak wygląda dobry dzień.',
+              'Wszystko odhaczone — dokładnie o to chodzi.',
+              streak >= 3 ? `${streak} dni z rzędu. Szkoda byłoby przerwać!` : 'Powtórz to jutro, a masz nawyk.');
+  } else {
+    if (!h.water) pool.push('Wypiłeś już dziś wodę? Dwa litry to Twój cel.',
+                            'Szklanka wody teraz. Serio, idź po nią.');
+    if (!h.steps && hour >= 12) pool.push('Kroki same się nie zrobią. Nawet 10 minut spaceru się liczy.');
+    if (!h.protein) pool.push('Pilnuj białka w każdym posiłku — to ono chroni mięśnie.');
+    if (!h.task) pool.push('Zadanie dnia czeka. Zajmie mniej, niż myślisz.');
+    if (!trainedToday && hour >= 16) pool.push('Bieżnia stoi i patrzy. 25 minut i masz z głowy.');
+    if (!weighedToday && hour < 12) pool.push('Zważ się rano, zanim zjesz — wtedy pomiary są porównywalne.');
+    if (done >= 2) pool.push('Dobrze Ci idzie. Zostało naprawdę niewiele.');
+    if (streak >= 3) pool.push(`Masz ${streak} dni serii. Nie oddawaj jej dzisiaj.`);
+  }
+
+  pool.push('Dasz radę. To kwestia powtarzania, nie siły woli.',
+            'Jeden dzień nic nie zmienia. Sto dni zmienia wszystko.',
+            'Wolno znaczy trwale. Szybko znaczy z powrotem.');
+
+  /* Wybór stały w obrębie godziny — maskotka nie gada od nowa przy
+     każdym kliknięciu, ale w ciągu dnia się odzywa. */
+  const seed = Number(today().split('-').join('')) + hour + done;
+  return pool[seed % pool.length];
+}
+
+function renderMascot() {
+  const s = Store.get();
+  const h = s.habits[today()] || {};
+  const done = ['water', 'steps', 'protein', 'task'].filter(k => h[k]).length;
+  const streak = streakDays();
+
+  const state = done === 0 ? 'sleep' : done === 4 ? 'proud' : done >= 2 ? 'happy' : 'awake';
+  const level = streakLevel(streak);
+  const next = STREAK_LEVELS.find(l => l.days > streak);
+
+  $('#panel-mascot').innerHTML = `
+    <div class="bubble">${esc(mascotLine(h, done, streak))}</div>
+    ${mascotSVG(MASCOT_STATES[state].face)}
+    <p class="mascot-name">Grzesiek</p>
+    <div class="streak">
+      <span class="streak-flame">${streak > 0 ? '🔥' : '·'}</span>
+      <strong>${streak}</strong>
+      <span class="muted small">${streak === 1 ? 'dzień' : 'dni'} z rzędu</span>
+    </div>
+    <span class="pill">${esc(level.name)}</span>
+    <div class="mascot-progress"><i style="width:${done / 4 * 100}%"></i></div>
+    <p class="muted small" style="margin:.25rem 0 0">${done} z 4 na dziś${
+      next ? ` · do „${esc(next.name)}" ${next.days - streak} dni` : ''}</p>`;
 }
 
 function card(label, value, unit, note, cls = '') {
@@ -161,7 +264,9 @@ $('#tip-next').addEventListener('click', () => {
   $('#panel-tip').textContent = TIPS[tipIndex % TIPS.length];
 });
 
-$('#panel-habits').addEventListener('change', e => {
+/* Nasłuch na wspólnym rodzicu — zadanie dnia renderuje się w osobnym
+   kontenerze niż nawyki, a oba muszą zapisywać tak samo. */
+$('#view-panel').addEventListener('change', e => {
   const key = e.target.dataset.habit;
   if (!key) return;
   Store.update(s => {
@@ -424,10 +529,15 @@ function renderTraining() {
     const b = STRENGTH[key];
     $(el).innerHTML = `<h2>${esc(b.name)}</h2>
       ${b.exercises.map(x => `
-        <details class="slot" style="margin-bottom:.4rem">
+        <details class="slot exercise" style="margin-bottom:.4rem">
           <summary><strong>${esc(x.name)}</strong> <span class="muted">· ${x.sets}</span></summary>
-          <p style="margin:.5rem 0 .2rem">${esc(x.how)}</p>
-          <p class="muted small" style="margin:0">${esc(x.why)}</p>
+          <div class="exercise-body">
+            ${x.fig ? exerciseFigure(x.fig) : ''}
+            <div>
+              <p style="margin:.2rem 0 .4rem">${esc(x.how)}</p>
+              <p class="muted small" style="margin:0">${esc(x.why)}</p>
+            </div>
+          </div>
         </details>`).join('')}
       <p class="muted small">Przerwa między seriami 60–90 s. Ostatnie 2 powtórzenia mają być trudne.</p>`;
   };
@@ -887,7 +997,9 @@ function buildShopping() {
     const { r, n } = e;
     const perServing = n / r.servings;   // ile całych przepisów potrzeba
     r.ingredients.forEach(i => {
-      if (isStaple(i.name) && i.unit === 'szczypta') return;
+      // produkty podstawowe (sól, oliwa, przyprawy) pomijamy niezależnie
+      // od jednostki — wcześniej warunek na 'szczypta' przepuszczał 16 z 20
+      if (isStaple(i.name)) return;
       const key = `${norm(i.name)}|${norm(i.unit)}`;
       const prev = acc.get(key);
       if (prev) prev.qty += i.qty * perServing;
@@ -898,6 +1010,14 @@ function buildShopping() {
   shoppingCache = [...acc.values()]
     .map(i => ({ ...i, qty: Math.ceil(i.qty * 10) / 10 }))
     .sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+
+  /* Odhaczenia są przypisane do konkretnego planu. Gdy plan się zmieni,
+     lista startuje czysta — inaczej nowy tydzień miałby większość pozycji
+     już zaznaczonych i można było wyjść ze sklepu bez połowy zakupów. */
+  const sig = JSON.stringify(Object.entries(s.plan).sort());
+  if (s.planSig !== sig) {
+    Store.update(st => { st.planSig = sig; st.bought = []; });
+  }
 }
 
 function renderShopping() {
@@ -1064,6 +1184,7 @@ function renderSummary() {
   const p = Store.get().profile;
   const bmr = Calc.bmr(p), tdee = Calc.tdee(p), goal = Calc.goal(p);
   const macros = Calc.macros(p), bmi = Calc.bmi(p), weeks = Calc.weeksToGoal(p);
+  const clipped = Calc.paceClipped(p);
 
   if (!goal) {
     $('#p-summary').innerHTML = '<span class="muted">Uzupełnij wiek, wzrost i wagę, żeby zobaczyć wyliczenia.</span>';
@@ -1088,8 +1209,15 @@ function renderSummary() {
     <p><strong>Makroskładniki:</strong> białko ${macros.protein} g ·
       tłuszcze ${macros.fat} g · węglowodany ${macros.carbs} g.</p>
     ${bmi ? `<p><strong>BMI:</strong> ${bmi} (${Calc.bmiLabel(bmi)}).</p>` : ''}
-    ${weeks ? `<p><strong>Prognoza:</strong> przy tym tempie cel ${fmt(p.target)} kg
-      osiągniesz w ok. ${weeks} tygodni, czyli około ${eta}.
+    ${clipped ? `<p class="tip-box"><strong>Twoje tempo zostało ograniczone.</strong>
+      Wybrałeś ${fmt2(clipped.chosen)} kg/tydzień, ale osiągnięcie tego wymagałoby zejścia
+      poniżej spoczynkowej przemiany materii. Cel zatrzymał się na ${goal} kcal,
+      co daje realnie ok. <strong>${fmt2(clipped.real)} kg/tydzień</strong>.
+      Żeby chudnąć szybciej, dołóż ruchu zamiast odejmować jedzenie — każde 300 kcal
+      spalone na bieżni to dodatkowe ok. 0,27 kg tygodniowo.</p>` : ''}
+    ${weeks ? `<p><strong>Prognoza:</strong> przy realnym tempie
+      ${fmt2(Calc.realPace(p))} kg/tydzień cel ${fmt(p.target)} kg osiągniesz
+      w ok. ${weeks} tygodni, czyli około ${eta}.
       To szacunek — tempo zwykle zwalnia po drodze i to normalne.</p>` : ''}
   `;
 }

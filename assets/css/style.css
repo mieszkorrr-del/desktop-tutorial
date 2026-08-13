@@ -172,6 +172,111 @@ input:focus, select:focus, textarea:focus {
 .habit input { width: auto; }
 .habit.done { background: var(--accent-soft); border-color: var(--accent); }
 
+/* ---------- Ilustracje ćwiczeń ---------- */
+.exercise-body { display: flex; gap: .9rem; align-items: flex-start; margin-top: .5rem; }
+.exfig {
+  width: 116px; height: 126px; flex: 0 0 auto;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+}
+/* dwie klatki na przemian — rysunek pokazuje ruch, nie zastygłą pozę */
+.exfig-a { animation: frame-a 2.4s steps(1, end) infinite; }
+.exfig-b { animation: frame-b 2.4s steps(1, end) infinite; }
+@keyframes frame-a { 0%, 45% { opacity: 1 } 50%, 100% { opacity: 0 } }
+@keyframes frame-b { 0%, 45% { opacity: 0 } 50%, 100% { opacity: 1 } }
+
+@media (prefers-reduced-motion: reduce) {
+  /* bez animacji pokazujemy obie fazy naraz, jedna półprzezroczysta */
+  .exfig-a { animation: none; opacity: .35 }
+  .exfig-b { animation: none; opacity: 1 }
+}
+@media (max-width: 420px) {
+  .exercise-body { flex-direction: column; align-items: center; }
+  .exfig { width: 140px; height: 152px; }
+  .exercise-body > div { width: 100%; }
+}
+
+/* ---------- Panel: kafelki 2×2 obok maskotki ---------- */
+.panel-top { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 1rem; margin-bottom: 1rem; }
+.panel-top .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 0; align-content: start; }
+@media (max-width: 780px) {
+  .panel-top { grid-template-columns: 1fr; }
+}
+
+/* ---------- Maskotka ---------- */
+.mascot-card {
+  background: linear-gradient(160deg, var(--accent-soft), var(--surface));
+  border-color: var(--accent);
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: .35rem; margin-bottom: 0;
+}
+.mascot-name { margin: 0; font-weight: 700; }
+.mascot-svg { width: 96px; height: 110px; flex: 0 0 auto; overflow: visible; }
+
+/* chmurka z ogonkiem wskazującym maskotkę */
+.bubble {
+  position: relative;
+  background: var(--surface); border: 1px solid var(--accent);
+  border-radius: 14px; padding: .6rem .8rem;
+  font-size: .92rem; line-height: 1.4; width: 100%;
+  box-shadow: var(--shadow);
+  animation: bubble-in .35s ease;
+}
+.bubble::after, .bubble::before {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  border: 9px solid transparent; border-top-color: var(--accent);
+  transform: translateX(-50%);
+}
+.bubble::before { margin-top: 0; }
+.bubble::after { border-top-color: var(--surface); margin-top: -1.5px; }
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(-6px) scale(.97) }
+  to   { opacity: 1; transform: none }
+}
+
+/* delikatne bujanie w miejscu — maskotka ma "żyć", nie rozpraszać */
+.mascot-body { animation: bob 3.4s ease-in-out infinite; transform-origin: 65px 130px; }
+@keyframes bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
+
+/* podniecone podskoki po komplecie zadań */
+.mascot-svg[data-face="proud"] .mascot-body { animation: jump .85s cubic-bezier(.3,.7,.4,1) infinite; }
+@keyframes jump {
+  0%, 100% { transform: translateY(0) scaleY(1) }
+  25%      { transform: translateY(-13px) scaleY(1.05) }
+  55%      { transform: translateY(0) scaleY(.94) }
+}
+
+/* machanie ręką, gdy jest wesoło */
+.mascot-svg[data-face="happy"] .mascot-arm-r,
+.mascot-svg[data-face="proud"] .mascot-arm-r { animation: wave 1s ease-in-out infinite; transform-origin: 108px 78px; }
+@keyframes wave { 0%, 100% { transform: rotate(0) } 50% { transform: rotate(-26deg) } }
+
+/* senne "z" unoszące się do góry */
+.mascot-z { animation: zzz 2.6s ease-out infinite; opacity: 0; }
+.mascot-z2 { animation-delay: 1.3s; }
+@keyframes zzz {
+  0%   { opacity: 0; transform: translate(0, 6px) }
+  30%  { opacity: .9 }
+  100% { opacity: 0; transform: translate(7px, -18px) }
+}
+
+.mascot-svg[data-face="sleep"] .mascot-body { animation: breathe 4.2s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.035) } }
+
+.streak { display: flex; align-items: center; gap: .4rem; font-size: 1.05rem; flex-wrap: wrap; }
+.streak strong { font-size: 1.5rem; }
+.streak-flame { font-size: 1.2rem; }
+.mascot-progress { height: 7px; border-radius: 4px; background: var(--line); overflow: hidden; margin: .6rem 0 .2rem; }
+.mascot-progress i { display: block; height: 100%; background: var(--accent); transition: width .4s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-body, .mascot-arm-r, .mascot-z { animation: none !important; }
+}
+
+@media (max-width: 460px) {
+  .mascot-svg { width: 74px; height: 86px; }
+  .mascot-line { font-size: .95rem; }
+}
+
 .tip-card { background: var(--accent-soft); border-color: var(--accent); }
 .tip-text { font-size: 1.02rem; }
 

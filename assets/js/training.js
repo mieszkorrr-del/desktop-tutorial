@@ -55,19 +55,19 @@ const STRENGTH = {
   A: {
     name: 'Trening A — nogi i plecy',
     exercises: [
-      { name: 'Przysiad do krzesła', sets: '3 × 8–12',
+      { name: 'Przysiad do krzesła', sets: '3 × 8–12', fig: 'przysiad',
         how: 'Stań tyłem do krzesła, opuszczaj się aż pośladki dotkną siedziska, wstań. Kolana kieruj na zewnątrz, ciężar na piętach.',
         why: 'Największa grupa mięśniowa ciała — najwięcej spalonych kalorii i ochrona mięśni ud w deficycie.' },
-      { name: 'Martwy ciąg z plecakiem', sets: '3 × 10–12',
+      { name: 'Martwy ciąg z plecakiem', sets: '3 × 10–12', fig: 'ciag',
         how: 'Plecak w dłoniach, nogi lekko ugięte, plecy proste. Odchyl biodra w tył, opuść plecak do połowy goleni, wróć napinając pośladki.',
         why: 'Wzmacnia całą tylną taśmę ciała — to ona odciąża odcinek lędźwiowy przy dużej masie brzucha.' },
-      { name: 'Wiosłowanie plecakiem w opadzie', sets: '3 × 10–12',
+      { name: 'Wiosłowanie plecakiem w opadzie', sets: '3 × 10–12', fig: 'wioslo',
         how: 'Pochyl się z prostymi plecami, plecak w obu rękach, przyciągaj go do brzucha ściągając łopatki.',
         why: 'Przeciwwaga dla siedzenia przy biurku i podstawa zdrowej postawy.' },
-      { name: 'Mostek biodrowy', sets: '3 × 12–15',
+      { name: 'Mostek biodrowy', sets: '3 × 12–15', fig: 'mostek',
         how: 'Leż na plecach, stopy przy pośladkach. Unieś biodra, ściśnij pośladki na sekundę u góry, opuść.',
         why: 'Buduje pośladki bez żadnego obciążenia kolan.' },
-      { name: 'Wznosy na palce', sets: '3 × 15–20',
+      { name: 'Wznosy na palce', sets: '3 × 15–20', fig: 'palce',
         how: 'Stań na stopniu lub progu, opuść pięty poniżej poziomu, unieś się wysoko.',
         why: 'Łydki amortyzują każdy krok na bieżni — silniejsze łydki to mniej bólu stóp.' }
     ]
@@ -75,19 +75,19 @@ const STRENGTH = {
   B: {
     name: 'Trening B — góra ciała i brzuch',
     exercises: [
-      { name: 'Pompki o blat kuchenny', sets: '3 × 8–12',
+      { name: 'Pompki o blat kuchenny', sets: '3 × 8–12', fig: 'pompki',
         how: 'Ręce na blacie szerzej niż barki, ciało w jednej linii. Im niższa powierzchnia, tym trudniej — z czasem schodź na krzesło, potem na podłogę.',
         why: 'Wersja skalowalna: te same mięśnie co klasyczne pompki, ale bez konieczności udźwignięcia całej masy ciała od pierwszego dnia.' },
-      { name: 'Wyciskanie plecaka nad głowę', sets: '3 × 10–12',
+      { name: 'Wyciskanie plecaka nad głowę', sets: '3 × 10–12', fig: 'wyciskanie',
         how: 'Stój prosto, plecak na wysokości klatki, wypchnij go nad głowę. Nie wyginaj pleców w łuk.',
         why: 'Barki i tricepsy — pomaga w codziennym podnoszeniu rzeczy nad głowę.' },
-      { name: 'Odwodzenie ramion z butelkami', sets: '3 × 12–15',
+      { name: 'Odwodzenie ramion z butelkami', sets: '3 × 12–15', fig: 'odwodzenie',
         how: 'Butelka 1–1,5 l w każdej ręce, unoś ramiona bokiem do wysokości barków, opuszczaj powoli.',
         why: 'Stabilizuje staw barkowy — najczęściej zaniedbywany przy treningu w domu.' },
-      { name: 'Deska (plank)', sets: '3 × 20–40 s',
+      { name: 'Deska (plank)', sets: '3 × 20–40 s', fig: 'deska',
         how: 'Na przedramionach i kolanach (wersja łatwiejsza) lub na stopach. Napnij brzuch i pośladki, biodra nie mogą opadać.',
         why: 'Uczy trzymania tułowia — bezpośrednio przekłada się na mniejsze bóle krzyża.' },
-      { name: 'Marsz w miejscu z wysokim kolanem', sets: '3 × 45 s',
+      { name: 'Marsz w miejscu z wysokim kolanem', sets: '3 × 45 s', fig: 'marsz',
         how: 'Spokojne unoszenie kolan na przemian, bez podskoków. Ręce pracują.',
         why: 'Domykający element cardio, bez fazy lotu i bez uderzenia w stawy.' }
     ]

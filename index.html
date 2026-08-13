@@ -47,7 +47,10 @@
       <button class="btn btn-primary" data-goto="profil">Uzupełnij profil</button>
     </div>
 
-    <div class="stat-grid" id="panel-stats"></div>
+    <div class="panel-top">
+      <div class="stat-grid" id="panel-stats"></div>
+      <div class="card mascot-card" id="panel-mascot"></div>
+    </div>
 
     <div class="cols">
       <div class="card">
@@ -58,6 +61,7 @@
         <h2>Nawyki dnia</h2>
         <p class="muted small">Trzy rzeczy, które robią najwięcej różnicy przy tej samej diecie.</p>
         <div id="panel-habits" class="habits"></div>
+        <div id="panel-task"></div>
       </div>
     </div>
 
@@ -320,7 +324,9 @@
 </div>
 
 <script src="assets/js/data.js"></script>
+<script src="assets/js/figures.js"></script>
 <script src="assets/js/training.js"></script>
+<script src="assets/js/daily.js"></script>
 <script src="assets/js/store.js"></script>
 <script src="assets/js/app.js"></script>
 <script>
