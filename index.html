@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kuchnia — Przepisy i redukcja</title>
+  <meta name="description" content="Przepisy dopasowane do zawartości lodówki, plan tygodnia, lista zakupów i dziennik wagi.">
+  <meta name="theme-color" content="#3f7d58">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Kuchnia">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">🥗</span>
+    <div>
+      <h1>Kuchnia</h1>
+      <p class="brand-sub">Przepisy i plan redukcji</p>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab is-active" data-view="panel">Panel</button>
+    <button class="tab" data-view="lodowka">Co mam w lodówce</button>
+    <button class="tab" data-view="przepisy">Przepisy</button>
+    <button class="tab" data-view="plan">Plan tygodnia</button>
+    <button class="tab" data-view="zakupy">Zakupy</button>
+    <button class="tab" data-view="postepy">Postępy</button>
+    <button class="tab" data-view="profil">Profil</button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- ======================= PANEL ======================= -->
+  <section class="view is-active" id="view-panel">
+    <div id="panel-setup" class="callout hidden">
+      <strong>Zacznij tutaj.</strong> Uzupełnij profil (wzrost, waga, wiek, cel),
+      a policzę Twoje zapotrzebowanie i cel kaloryczny na redukcji.
+      <button class="btn btn-primary" data-goto="profil">Uzupełnij profil</button>
+    </div>
+
+    <div class="stat-grid" id="panel-stats"></div>
+
+    <div class="cols">
+      <div class="card">
+        <h2>Dzisiejszy plan</h2>
+        <div id="panel-today"></div>
+      </div>
+      <div class="card">
+        <h2>Nawyki dnia</h2>
+        <p class="muted small">Trzy rzeczy, które robią najwięcej różnicy przy tej samej diecie.</p>
+        <div id="panel-habits" class="habits"></div>
+      </div>
+    </div>
+
+    <div class="card tip-card">
+      <h2>Słowo trenera</h2>
+      <p id="panel-tip" class="tip-text"></p>
+      <button class="btn btn-ghost btn-sm" id="tip-next">Następna wskazówka</button>
+    </div>
+  </section>
+
+  <!-- ======================= LODÓWKA ======================= -->
+  <section class="view" id="view-lodowka">
+    <div class="card">
+      <h2>Co masz w lodówce?</h2>
+      <p class="muted">
+        Wypisz produkty po przecinku — np. <em>kurczak, ryż, papryka, jogurt</em>.
+        Wybierz posiłek, a dopasuję przepisy i pokażę, czego brakuje.
+        Sól, pieprz, oliwa i podstawowe przyprawy są zakładane z góry.
+      </p>
+      <textarea id="fridge-input" rows="3" placeholder="kurczak, ryż, papryka, cebula, jogurt naturalny…"></textarea>
+      <div class="row">
+        <div class="chips" id="fridge-meal">
+          <button class="chip is-active" data-meal="all">Wszystko</button>
+          <button class="chip" data-meal="sniadanie">Śniadanie</button>
+          <button class="chip" data-meal="obiad">Obiad</button>
+          <button class="chip" data-meal="kolacja">Kolacja</button>
+          <button class="chip" data-meal="deser">Deser</button>
+          <button class="chip" data-meal="przekaska">Przekąska</button>
+        </div>
+        <button class="btn btn-primary" id="fridge-go">Szukaj propozycji</button>
+      </div>
+    </div>
+    <div id="fridge-results"></div>
+  </section>
+
+  <!-- ======================= PRZEPISY ======================= -->
+  <section class="view" id="view-przepisy">
+    <div class="card filters">
+      <div class="row">
+        <input type="search" id="search" placeholder="Szukaj przepisu lub składnika…">
+        <button class="btn btn-primary" id="add-recipe-open">+ Dodaj własny przepis</button>
+      </div>
+      <div class="chips" id="filter-meal">
+        <button class="chip is-active" data-meal="all">Wszystkie</button>
+        <button class="chip" data-meal="sniadanie">Śniadania</button>
+        <button class="chip" data-meal="obiad">Obiady</button>
+        <button class="chip" data-meal="kolacja">Kolacje</button>
+        <button class="chip" data-meal="deser">Desery</button>
+        <button class="chip" data-meal="przekaska">Przekąski</button>
+        <button class="chip" data-meal="fav">★ Ulubione</button>
+      </div>
+      <div class="row row-wrap">
+        <label class="field">Maks. kcal / porcja
+          <input type="number" id="filter-kcal" placeholder="np. 500" min="0" step="50">
+        </label>
+        <label class="field">Maks. czas (min)
+          <input type="number" id="filter-time" placeholder="np. 20" min="0" step="5">
+        </label>
+        <label class="field">Tag
+          <select id="filter-tag"><option value="">— dowolny —</option></select>
+        </label>
+      </div>
+    </div>
+    <p class="muted small" id="recipe-count"></p>
+    <div class="recipe-grid" id="recipe-list"></div>
+  </section>
+
+  <!-- ======================= PLAN ======================= -->
+  <section class="view" id="view-plan">
+    <div class="card">
+      <h2>Plan tygodnia</h2>
+      <p class="muted">
+        Ułóż tydzień z góry. Pod każdym dniem widzisz sumę kalorii i to, czy
+        mieścisz się w celu. Kliknij pole, żeby wybrać przepis.
+      </p>
+      <div class="row">
+        <button class="btn btn-ghost" id="plan-clear">Wyczyść plan</button>
+        <button class="btn btn-ghost" id="plan-auto">Ułóż automatycznie</button>
+      </div>
+    </div>
+    <div class="plan-grid" id="plan-grid"></div>
+  </section>
+
+  <!-- ======================= ZAKUPY ======================= -->
+  <section class="view" id="view-zakupy">
+    <div class="card">
+      <h2>Lista zakupów</h2>
+      <p class="muted">Generowana z planu tygodnia. Te same składniki są sumowane.</p>
+      <div class="row">
+        <button class="btn btn-primary" id="shop-build">Zbuduj z planu tygodnia</button>
+        <button class="btn btn-ghost" id="shop-uncheck">Odznacz wszystko</button>
+      </div>
+    </div>
+    <div class="card" id="shop-list"></div>
+  </section>
+
+  <!-- ======================= POSTĘPY ======================= -->
+  <section class="view" id="view-postepy">
+    <div class="card">
+      <h2>Dziennik wagi</h2>
+      <div class="row row-wrap">
+        <label class="field">Data
+          <input type="date" id="w-date">
+        </label>
+        <label class="field">Waga (kg)
+          <input type="number" id="w-kg" step="0.1" min="20" max="400" placeholder="np. 92,4">
+        </label>
+        <button class="btn btn-primary" id="w-add">Zapisz pomiar</button>
+      </div>
+      <p class="muted small">Ważenie: rano, po toalecie, przed jedzeniem. Zawsze tak samo.</p>
+    </div>
+    <div class="card">
+      <h2>Wykres</h2>
+      <div id="chart"></div>
+    </div>
+    <div class="card">
+      <h2>Historia</h2>
+      <div id="w-history"></div>
+    </div>
+  </section>
+
+  <!-- ======================= PROFIL ======================= -->
+  <section class="view" id="view-profil">
+    <div class="card">
+      <h2>Twoje dane</h2>
+      <div class="form-grid">
+        <label class="field">Płeć
+          <select id="p-sex">
+            <option value="m">Mężczyzna</option>
+            <option value="k">Kobieta</option>
+          </select>
+        </label>
+        <label class="field">Wiek (lata)
+          <input type="number" id="p-age" min="14" max="100">
+        </label>
+        <label class="field">Wzrost (cm)
+          <input type="number" id="p-height" min="120" max="230">
+        </label>
+        <label class="field">Waga teraz (kg)
+          <input type="number" id="p-weight" step="0.1" min="30" max="400">
+        </label>
+        <label class="field">Waga docelowa (kg)
+          <input type="number" id="p-target" step="0.1" min="30" max="400">
+        </label>
+        <label class="field">Aktywność
+          <select id="p-activity"></select>
+        </label>
+        <label class="field">Tempo chudnięcia
+          <select id="p-pace"></select>
+        </label>
+      </div>
+      <button class="btn btn-primary" id="p-save">Zapisz profil</button>
+      <div id="p-summary" class="summary"></div>
+    </div>
+
+    <div class="card">
+      <h2>Dane i kopia zapasowa</h2>
+      <p class="muted">
+        Wszystko zapisuje się wyłącznie w tej przeglądarce. Wyczyszczenie danych
+        przeglądarki skasuje też Twoją historię — zrób kopię.
+      </p>
+      <div class="row">
+        <button class="btn btn-ghost" id="d-export">Pobierz kopię (JSON)</button>
+        <label class="btn btn-ghost file-btn">Wczytaj kopię
+          <input type="file" id="d-import" accept="application/json" hidden>
+        </label>
+        <button class="btn btn-danger" id="d-reset">Skasuj wszystkie dane</button>
+      </div>
+    </div>
+
+    <div class="card disclaimer">
+      <h2>Ważne zastrzeżenie</h2>
+      <p>
+        Ta aplikacja liczy szacunki na podstawie standardowych wzorów
+        (Mifflin-St Jeor) i typowych wartości odżywczych produktów. To narzędzie
+        organizacyjne, nie porada medyczna. Jeśli chorujesz przewlekle, bierzesz
+        leki, jesteś w ciąży albo planujesz duży deficyt — skonsultuj plan
+        z lekarzem lub dietetykiem klinicznym. Zapotrzebowanie policzone wzorem
+        potrafi się mylić o ±10–15%; realną weryfikacją jest zmiana wagi
+        w czasie, dlatego prowadź dziennik.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ======================= MODALE ======================= -->
+<div class="modal hidden" id="modal">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close aria-label="Zamknij">×</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+  /* Tryb offline działa tylko przez http(s) — przy otwarciu pliku z dysku
+     przeglądarka blokuje service workery i po prostu to pomijamy. */
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
