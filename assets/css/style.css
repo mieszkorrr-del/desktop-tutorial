@@ -403,3 +403,35 @@ input:focus, select:focus, textarea:focus {
 .summary strong { color: var(--accent-ink); }
 .disclaimer { border-left: 3px solid var(--warn); }
 .empty { text-align: center; color: var(--ink-soft); padding: 2rem 1rem; }
+
+/* ---------- Dziennik posiłków ---------- */
+.diary-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: .8rem; }
+.diary-kcal { font-size: 2.2rem; font-weight: 700; line-height: 1; }
+.diary-ring {
+  width: 74px; height: 74px; border-radius: 50%; flex: 0 0 auto;
+  background: conic-gradient(var(--accent) calc(var(--pct) * 1%), var(--line) 0);
+  display: grid; place-items: center; position: relative;
+}
+.diary-ring::after {
+  content: ''; position: absolute; inset: 8px; border-radius: 50%; background: var(--surface);
+}
+.diary-ring span { position: relative; z-index: 1; font-weight: 700; font-size: .82rem; }
+
+.macros { display: flex; flex-direction: column; gap: .45rem; }
+.macro-row { display: flex; align-items: center; gap: .6rem; font-size: .85rem; }
+.macro-label { width: 62px; color: var(--ink-soft); flex: 0 0 auto; }
+.macro-track { flex: 1; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.macro-track i { display: block; height: 100%; transition: width .35s ease; }
+.macro-track i.m-p { background: var(--accent); }
+.macro-track i.m-f { background: #d8a13c; }
+.macro-track i.m-c { background: #7d9fc4; }
+.macro-track i.over { background: var(--warn); }
+.macro-val { width: 92px; text-align: right; color: var(--ink-soft); flex: 0 0 auto; }
+
+.pick-list { max-height: 330px; overflow-y: auto; margin-top: .5rem; border: 1px solid var(--line); border-radius: 10px; }
+.pick {
+  display: flex; justify-content: space-between; gap: .8rem; align-items: center;
+  padding: .55rem .7rem; border-bottom: 1px solid var(--line); cursor: pointer; font-size: .9rem;
+}
+.pick:last-child { border-bottom: 0; }
+.pick:hover { background: var(--accent-soft); }

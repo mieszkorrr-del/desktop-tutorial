@@ -27,6 +27,7 @@
   </div>
   <nav class="tabs" id="tabs">
     <button class="tab is-active" data-view="panel">Panel</button>
+    <button class="tab" data-view="dziennik">Dziennik</button>
     <button class="tab" data-view="lodowka">Co mam w lodówce</button>
     <button class="tab" data-view="przepisy">Przepisy</button>
     <button class="tab" data-view="treningi">Treningi</button>
@@ -69,6 +70,71 @@
       <h2>Słowo trenera</h2>
       <p id="panel-tip" class="tip-text"></p>
       <button class="btn btn-ghost btn-sm" id="tip-next">Następna wskazówka</button>
+    </div>
+  </section>
+
+  <!-- ======================= DZIENNIK ======================= -->
+  <section class="view" id="view-dziennik">
+    <div class="card">
+      <div class="row row-wrap" style="justify-content:space-between">
+        <h2 style="margin:0">Co dziś zjadłem</h2>
+        <label class="field" style="max-width:170px">Dzień
+          <input type="date" id="d-date">
+        </label>
+      </div>
+      <div id="diary-summary"></div>
+    </div>
+
+    <div class="card">
+      <h2>Dodaj do dziennika</h2>
+      <div class="chips" id="diary-source">
+        <button class="chip is-active" data-src="przepisy">Z przepisów</button>
+        <button class="chip" data-src="produkty">Produkty</button>
+        <button class="chip" data-src="baza">Szukaj w bazie online</button>
+        <button class="chip" data-src="fastfood">Na mieście</button>
+        <button class="chip" data-src="wlasne">Moje potrawy</button>
+        <button class="chip" data-src="reczne">Wpisz ręcznie</button>
+      </div>
+      <div id="diary-add"></div>
+    </div>
+
+    <div class="card">
+      <h2>Posiłki dnia</h2>
+      <div id="diary-list"></div>
+    </div>
+
+    <div class="card">
+      <h2>Kreator własnej potrawy</h2>
+      <p class="muted">
+        Składasz danie ze składników — np. pinsa, szynka, ser — a aplikacja
+        liczy kalorie całości i jednej porcji. Gotową potrawę zapiszesz
+        i użyjesz jednym kliknięciem następnym razem.
+      </p>
+      <div class="row row-wrap">
+        <label class="field" style="flex:2;min-width:180px">Składnik
+          <input type="text" id="comp-name" list="comp-list" placeholder="np. ser żółty">
+          <datalist id="comp-list"></datalist>
+        </label>
+        <label class="field">Ilość (g)
+          <input type="text" inputmode="decimal" id="comp-qty" placeholder="np. 50">
+        </label>
+        <button class="btn btn-ghost" id="comp-add">Dodaj składnik</button>
+      </div>
+      <div id="comp-items"></div>
+      <div class="row row-wrap" style="margin-top:.6rem">
+        <label class="field" style="flex:2;min-width:180px">Nazwa potrawy
+          <input type="text" id="comp-title" placeholder="np. Pinsa z szynką i serem">
+        </label>
+        <label class="field">Porcji
+          <input type="text" inputmode="numeric" id="comp-serv" value="1">
+        </label>
+        <button class="btn btn-primary" id="comp-save">Zapisz potrawę</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Post przerywany</h2>
+      <div id="fasting-box"></div>
     </div>
   </section>
 
@@ -328,12 +394,15 @@
 </div>
 
 <script src="assets/js/data.js"></script>
+<script src="assets/js/products.js"></script>
 <script src="assets/js/recipes-tanie.js"></script>
+<script src="assets/js/diary.js"></script>
 <script src="assets/js/figures.js"></script>
 <script src="assets/js/training.js"></script>
 <script src="assets/js/daily.js"></script>
 <script src="assets/js/store.js"></script>
 <script src="assets/js/app.js"></script>
+<script src="assets/js/diary-ui.js"></script>
 <script>
   /* Tryb offline działa tylko przez http(s) — przy otwarciu pliku z dysku
      przeglądarka blokuje service workery i po prostu to pomijamy. */

@@ -23,7 +23,10 @@ const DEFAULT_STATE = {
   fridge: '',           // ostatnia zawartość lodówki
   habits: {},           // { 'YYYY-MM-DD': { water: true, steps: true, protein: true } }
   workouts: [],         // [{ date, kind: 'biezn'|'sila', minutes, kcal, detail }]
-  trainingStart: null   // data startu 12-tygodniowego programu bieżni
+  trainingStart: null,  // data startu 12-tygodniowego programu bieżni
+  diary: {},            // { 'YYYY-MM-DD': [wpisy posiłków] }
+  dishes: [],           // własne potrawy z kreatora
+  fasting: {}           // schemat i start postu przerywanego
 };
 
 let state = load();

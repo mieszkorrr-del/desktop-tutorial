@@ -41,6 +41,7 @@ function showView(name) {
   window.scrollTo({ top: 0, behavior: 'instant' });
   if (name === 'panel') renderPanel();
   if (name === 'treningi') renderTraining();
+  if (name === 'dziennik') renderDiary();
   if (name === 'plan') renderPlan();
   if (name === 'zakupy') renderShopping();
   if (name === 'postepy') renderProgress();
@@ -774,7 +775,8 @@ function openRecipe(id, servings) {
     ${r.tip ? `<p class="tip-box"><strong>Trener:</strong> ${esc(r.tip)}</p>` : ''}
 
     <div class="row" style="margin-top:1rem">
-      <button class="btn btn-primary" data-plan-add="${r.id}">Dodaj do planu</button>
+      <button class="btn btn-primary" data-ate="${r.id}">Zjadłem to</button>
+      <button class="btn btn-ghost" data-plan-add="${r.id}">Dodaj do planu</button>
       <button class="btn btn-ghost" data-fav="${r.id}">
         ${Store.isFavorite(r.id) ? '★ W ulubionych' : '☆ Do ulubionych'}
       </button>
@@ -797,6 +799,16 @@ $('#modal').addEventListener('click', e => {
 
   const add = e.target.closest('[data-plan-add]');
   if (add) { closeModal(); pickSlotFor(add.dataset.planAdd); }
+
+  const ate = e.target.closest('[data-ate]');
+  if (ate) {
+    const rec = Store.recipe(ate.dataset.ate);
+    if (rec) {
+      addEntry({ name: rec.name, kcal: rec.kcal, protein: rec.protein, fat: rec.fat, carbs: rec.carbs });
+      closeModal();
+      showView('dziennik');
+    }
+  }
 });
 
 /* --- dodawanie własnego przepisu --- */
