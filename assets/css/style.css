@@ -54,7 +54,10 @@ p { margin: 0 0 .75rem; }
   position: sticky; top: 0; z-index: 20;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
-  padding: .75rem 1rem 0;
+  /* env(safe-area-*) chroni treść przed wcięciem ekranu (notch, Dynamic
+     Island) w trybie pełnoekranowym na iPhonie */
+  padding: calc(.75rem + env(safe-area-inset-top)) calc(1rem + env(safe-area-inset-right)) 0
+           calc(1rem + env(safe-area-inset-left));
 }
 .brand { display: flex; align-items: center; gap: .7rem; margin-bottom: .6rem; }
 .brand-mark { font-size: 1.7rem; }
@@ -73,7 +76,11 @@ p { margin: 0 0 .75rem; }
 .tab.is-active { color: var(--accent-ink); border-bottom-color: var(--accent); font-weight: 600; }
 
 /* ---------- Layout ---------- */
-main { max-width: 1080px; margin: 0 auto; padding: 1.25rem 1rem 4rem; }
+main {
+  max-width: 1080px; margin: 0 auto;
+  padding: 1.25rem calc(1rem + env(safe-area-inset-right)) calc(4rem + env(safe-area-inset-bottom))
+           calc(1rem + env(safe-area-inset-left));
+}
 .view { display: none; }
 .view.is-active { display: block; animation: fade .18s ease; }
 @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
