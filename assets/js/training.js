@@ -94,6 +94,62 @@ const STRENGTH = {
   }
 };
 
+/* Zamienniki ćwiczeń — po trzy do każdego. Powód jest zawsze podany,
+   bo "nie mogę tego zrobić" znaczy co innego przy bólu kolana, a co
+   innego przy braku sprzętu. */
+const ALTS = {
+  przysiad: [
+    { name: 'Wstawanie z krzesła bez rąk', why: 'Gdy pełny przysiad jest za ciężki — ten sam ruch, mniejszy zakres.' },
+    { name: 'Przysiad przy futrynie', why: 'Trzymasz się framugi i schodzisz niżej. Ręce odciążają kolana.' },
+    { name: 'Mostek biodrowy', why: 'Gdy kolana bolą — pośladki pracują bez żadnego zgięcia kolana pod obciążeniem.' }
+  ],
+  ciag: [
+    { name: 'Martwy ciąg z reklamówką z zakupami', why: 'Gdy nie masz plecaka — działa każdy ciężar w dłoniach.' },
+    { name: 'Skłon biodrowy bez obciążenia', why: 'Gdy boli krzyż — uczy samego ruchu, zanim dołożysz kilogramy.' },
+    { name: 'Unoszenie tułowia leżąc na brzuchu', why: 'Gdy w ogóle nie możesz stać — prostownik grzbietu pracuje na podłodze.' }
+  ],
+  wioslo: [
+    { name: 'Wiosłowanie jednorącz o krzesło', why: 'Gdy boli krzyż — jedna ręka na oparciu odciąża plecy.' },
+    { name: 'Przyciąganie ręcznika napiętego przed sobą', why: 'Gdy nie masz nic do trzymania — napinasz ręcznik i ściągasz łopatki.' },
+    { name: 'Odwodzenie ramion w opadzie z butelkami', why: 'Gdy plecak jest za ciężki — lżejszy wariant na te same mięśnie.' }
+  ],
+  mostek: [
+    { name: 'Mostek jednonóż', why: 'Gdy wersja podstawowa jest za łatwa — dwa razy większe obciążenie.' },
+    { name: 'Napinanie pośladków na stojąco', why: 'Gdy nie możesz leżeć — 20 mocnych napięć po 3 sekundy.' },
+    { name: 'Odwodzenie nogi leżąc na boku', why: 'Gdy boli krzyż — pośladek średni bez ruchu kręgosłupa.' }
+  ],
+  palce: [
+    { name: 'Wznosy na palce na płaskiej podłodze', why: 'Gdy nie masz stopnia ani progu.' },
+    { name: 'Wznosy na jednej nodze', why: 'Gdy obie nogi to za mało — łydka dostaje podwójne obciążenie.' },
+    { name: 'Marsz na palcach przez 30 sekund', why: 'Gdy chcesz wariant dynamiczny.' }
+  ],
+  pompki: [
+    { name: 'Pompki o ścianę', why: 'Gdy blat jest za trudny — najłatwiejsza wersja, jaka istnieje.' },
+    { name: 'Pompki na kolanach', why: 'Gdy chcesz zejść niżej, ale nie udźwigniesz jeszcze całego ciała.' },
+    { name: 'Wyciskanie plecaka leżąc', why: 'Gdy boli nadgarstek — ten sam ruch bez obciążania dłoni.' }
+  ],
+  wyciskanie: [
+    { name: 'Wyciskanie butelek nad głowę', why: 'Gdy plecak jest za ciężki.' },
+    { name: 'Wyciskanie na siedząco', why: 'Gdy boli krzyż — oparcie krzesła eliminuje wyginanie pleców.' },
+    { name: 'Unoszenie ramion w przód', why: 'Gdy bark nie pozwala wyjść nad głowę — mniejszy zakres.' }
+  ],
+  odwodzenie: [
+    { name: 'Odwodzenie z jedną butelką na zmianę', why: 'Gdy obie ręce naraz są za trudne.' },
+    { name: 'Odwodzenie leżąc na boku', why: 'Gdy bark boli w staniu — brak obciążenia stawu w pionie.' },
+    { name: 'Krążenia ramion bez obciążenia', why: 'Gdy rozgrzewasz bark albo wracasz po przerwie.' }
+  ],
+  deska: [
+    { name: 'Deska na kolanach', why: 'Gdy pełna deska rozjeżdża biodra po 10 sekundach.' },
+    { name: 'Deska o blat kuchenny', why: 'Gdy nie chcesz schodzić na podłogę — kąt robi robotę za Ciebie.' },
+    { name: 'Napinanie brzucha na leżąco', why: 'Gdy boli krzyż — dociskasz lędźwie do podłogi i trzymasz 10 sekund.' }
+  ],
+  marsz: [
+    { name: 'Marsz w miejscu bez unoszenia kolan', why: 'Gdy biodro protestuje przy wysokim kolanie.' },
+    { name: 'Wchodzenie na stopień', why: 'Gdy masz schody — więcej pracy nóg przy tym samym bezpieczeństwie.' },
+    { name: '5 minut spokojnego marszu po mieszkaniu', why: 'Gdy jest naprawdę ciężki dzień. Cokolwiek bije zero.' }
+  ]
+};
+
 /* Tygodniowy układ: bieżnia + siła nie powinny lądować tego samego dnia
    na starcie, bo regeneracja przy deficycie jest wolniejsza. */
 const WEEK_TEMPLATE = [

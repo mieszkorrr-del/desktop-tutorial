@@ -74,7 +74,8 @@ const Store = {
 
   /* --- przepisy --- */
   allRecipes() {
-    return [...RECIPES, ...state.custom];
+    const extra = typeof RECIPES_TANIE !== 'undefined' ? RECIPES_TANIE : [];
+    return [...RECIPES, ...extra, ...state.custom];
   },
 
   recipe(id) {

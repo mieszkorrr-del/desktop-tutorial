@@ -195,6 +195,11 @@ input:focus, select:focus, textarea:focus {
   .exercise-body > div { width: 100%; }
 }
 
+.alts { border-left: 3px solid var(--accent); padding-left: .7rem; margin-top: .4rem; }
+.alts-title { margin: 0 0 .35rem; font-size: .82rem; font-weight: 700; color: var(--accent-ink); }
+.alt { margin-bottom: .35rem; font-size: .88rem; }
+.alt strong { display: block; }
+
 /* ---------- Panel: kafelki 2×2 obok maskotki ---------- */
 .panel-top { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 1rem; margin-bottom: 1rem; }
 .panel-top .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 0; align-content: start; }
@@ -261,6 +266,19 @@ input:focus, select:focus, textarea:focus {
 
 .mascot-svg[data-face="sleep"] .mascot-body { animation: breathe 4.2s ease-in-out infinite; }
 @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.035) } }
+
+/* reakcja na kliknięcie — maskotka podskakuje i wierci się z radości */
+.mascot-card { cursor: pointer; user-select: none; }
+.mascot-svg.petted { animation: petted 3.4s ease-out; }
+@keyframes petted {
+  0%   { transform: scale(1) rotate(0) }
+  8%   { transform: scale(1.16) rotate(-7deg) }
+  18%  { transform: scale(1.12) rotate(7deg) }
+  28%  { transform: scale(1.16) rotate(-5deg) }
+  38%  { transform: scale(1.1) rotate(4deg) }
+  50%  { transform: scale(1.06) rotate(0) }
+  100% { transform: scale(1) rotate(0) }
+}
 
 .streak { display: flex; align-items: center; gap: .4rem; font-size: 1.05rem; flex-wrap: wrap; }
 .streak strong { font-size: 1.5rem; }

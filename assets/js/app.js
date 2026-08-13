@@ -225,6 +225,35 @@ function mascotLine(h, done, streak) {
   return pool[seed % pool.length];
 }
 
+/* Maskotka ma płeć zgodną z profilem — chłopiec Błażej, dziewczyna
+   Gabrysia. Kliknięcie w nią wywołuje uśmiech na kilka sekund. */
+function mascotName() {
+  return Store.get().profile.sex === 'k' ? 'Gabrysia' : 'Błażej';
+}
+
+let petted = false;
+let pettedTimer = null;
+
+function pettedLine() {
+  const lines = [
+    'Hej! Miło Cię widzieć.',
+    'No dobra, wracamy do roboty. Ale było miło.',
+    'Ha! Łaskocze.',
+    'Dzięki. Też Ci kibicuję.',
+    'Jestem tu cały czas, gdybyś potrzebował.'
+  ];
+  return lines[Math.floor(Date.now() / 1000) % lines.length];
+}
+
+$('#panel-mascot').addEventListener('click', () => {
+  petted = true;
+  clearTimeout(pettedTimer);
+  renderMascot();
+  const svg = $('#panel-mascot .mascot-svg');
+  if (svg) { svg.classList.remove('petted'); void svg.offsetWidth; svg.classList.add('petted'); }
+  pettedTimer = setTimeout(() => { petted = false; renderMascot(); }, 3500);
+});
+
 function renderMascot() {
   const s = Store.get();
   const h = s.habits[today()] || {};
@@ -236,9 +265,9 @@ function renderMascot() {
   const next = STREAK_LEVELS.find(l => l.days > streak);
 
   $('#panel-mascot').innerHTML = `
-    <div class="bubble">${esc(mascotLine(h, done, streak))}</div>
-    ${mascotSVG(MASCOT_STATES[state].face)}
-    <p class="mascot-name">Grzesiek</p>
+    <div class="bubble">${esc(petted ? pettedLine() : mascotLine(h, done, streak))}</div>
+    ${mascotSVG(petted ? 'proud' : MASCOT_STATES[state].face, s.profile.sex)}
+    <p class="mascot-name">${esc(mascotName())}</p>
     <div class="streak">
       <span class="streak-flame">${streak > 0 ? '🔥' : '·'}</span>
       <strong>${streak}</strong>
@@ -283,18 +312,52 @@ function isStaple(name) {
   return STAPLES.some(st => n.includes(st));
 }
 
-/* Czy składnik przepisu jest pokryty przez to, co wpisał użytkownik. */
-function covered(ingName, tokens) {
-  const ing = norm(ingName);
-  return tokens.some(t => {
+/* Usuwa polskie ogonki, żeby "maslo" i "masło" znaczyły to samo —
+   z telefonu rzadko kto pisze z diakrytykami. */
+const deacc = s => norm(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
+
+/* Pary, które wcześniej dawały fałszywe trafienia: wpisanie "mleko"
+   pasowało do "mleko kokosowe", a "mąka" do "makaronu". */
+const FALSE_PAIRS = [
+  ['mleko', 'mleko kokosowe'], ['mleko', 'mleko roślinne'],
+  ['maka', 'makaron'], ['ser', 'serek'], ['mielone', 'siemie'],
+  ['mielone', 'twarog']
+];
+
+function pairIsFalse(token, ing) {
+  return FALSE_PAIRS.some(([t, bad]) => token === deacc(t) && ing.includes(deacc(bad)));
+}
+
+/* Czy składnik przepisu jest pokryty przez to, co wpisał użytkownik.
+   `allowSubs` włącza zamienniki (brak kaszy, ale jest ryż). */
+function covered(ingName, tokens, allowSubs = true) {
+  const ing = deacc(ingName);
+
+  const hit = t => {
     if (t.length < 3) return false;
+    if (pairIsFalse(t, ing)) return false;
     if (ing.includes(t)) return true;
-    const aliases = ALIASES[t];
-    if (aliases && aliases.some(a => ing.includes(norm(a)))) return true;
-    // krótki rdzeń: "pomidory" ↔ "pomidorki", "brokuły" ↔ "brokuł"
+
+    const aliases = ALIASES[t] || ALIASES[Object.keys(ALIASES).find(k => deacc(k) === t)];
+    if (aliases && aliases.some(a => ing.includes(deacc(a)))) return true;
+
+    // rdzeń wyrazu: "pomidory" ↔ "pomidorki", "brokuly" ↔ "brokul"
     const stem = t.slice(0, Math.max(4, t.length - 2));
     return stem.length >= 4 && ing.includes(stem);
-  });
+  };
+
+  if (tokens.some(hit)) return true;
+
+  if (allowSubs) {
+    /* Szukamy zamiennika: jeśli składnik przepisu należy do grupy
+       (np. "kasza"), a użytkownik ma cokolwiek innego z tej grupy
+       (np. "ryż"), uznajemy składnik za pokryty. */
+    for (const [key, group] of Object.entries(SUBSTITUTES)) {
+      if (!ing.includes(deacc(key))) continue;
+      if (group.some(g => tokens.some(t => deacc(g).includes(t) || t.includes(deacc(g))))) return true;
+    }
+  }
+  return false;
 }
 
 function matchRecipes(text, meal) {
@@ -323,6 +386,9 @@ $('#fridge-meal').addEventListener('click', e => {
 });
 
 $('#fridge-go').addEventListener('click', runFridge);
+$('#fridge-strict').addEventListener('change', () => {
+  if ($('#fridge-input').value.trim()) runFridge();
+});
 $('#fridge-input').addEventListener('keydown', e => {
   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) runFridge();
 });
@@ -348,6 +414,18 @@ function runFridge() {
   }
 
   const ready = matches.filter(m => m.missing.length === 0);
+  const strict = $('#fridge-strict').checked;
+
+  if (strict) {
+    box.innerHTML = ready.length
+      ? group('Zrobisz od ręki — masz wszystko', ready)
+      : `<div class="card empty">
+          Z tych produktów nie złożę pełnego dania${fridgeMeal !== 'all' ? ` w kategorii „${MEALS[fridgeMeal]}”` : ''}.
+          Odznacz „tylko bez zakupów", a pokażę przepisy, do których brakuje jednej–dwóch rzeczy.
+        </div>`;
+    return;
+  }
+
   const almost = matches.filter(m => m.missing.length > 0 && m.missing.length <= 2);
   const rest = matches.filter(m => m.missing.length > 2).slice(0, 6);
 
@@ -535,7 +613,16 @@ function renderTraining() {
             ${x.fig ? exerciseFigure(x.fig) : ''}
             <div>
               <p style="margin:.2rem 0 .4rem">${esc(x.how)}</p>
-              <p class="muted small" style="margin:0">${esc(x.why)}</p>
+              <p class="muted small" style="margin:0 0 .5rem">${esc(x.why)}</p>
+              ${(ALTS[x.fig] || []).length ? `
+                <div class="alts">
+                  <p class="alts-title">Nie możesz tego zrobić? Zamień na:</p>
+                  ${ALTS[x.fig].map(a => `
+                    <div class="alt">
+                      <strong>${esc(a.name)}</strong>
+                      <span class="muted small">${esc(a.why)}</span>
+                    </div>`).join('')}
+                </div>` : ''}
             </div>
           </div>
         </details>`).join('')}

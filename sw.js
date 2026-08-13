@@ -2,12 +2,13 @@
    albo w kuchni z kiepskim zasięgiem. Strategia: najpierw sieć (żeby
    aktualizacje wchodziły od razu), z cache jako zapasem. */
 
-const CACHE = 'kuchnia-v5';
+const CACHE = 'kuchnia-v6';
 const ASSETS = [
   './',
   './manifest.json',
   './assets/css/style.css',
   './assets/js/data.js',
+  './assets/js/recipes-tanie.js',
   './assets/js/figures.js',
   './assets/js/training.js',
   './assets/js/daily.js',

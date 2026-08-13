@@ -101,7 +101,7 @@ function streakLevel(days) {
 }
 
 /* Maskotka w SVG. Mimika sterowana atrybutem data-face, animacje w CSS. */
-function mascotSVG(face) {
+function mascotSVG(face, sex) {
   const eyes = {
     sleep:   '<path d="M40 52 q8 6 16 0" fill="none" stroke="#2c5b3f" stroke-width="3" stroke-linecap="round"/>' +
              '<path d="M74 52 q8 6 16 0" fill="none" stroke="#2c5b3f" stroke-width="3" stroke-linecap="round"/>',
@@ -137,6 +137,12 @@ function mascotSVG(face) {
       <!-- ręce -->
       <path class="mascot-arm-l" d="M22 78 q-12 8 -10 20" fill="none" stroke="#6bbf8e" stroke-width="7" stroke-linecap="round"/>
       <path class="mascot-arm-r" d="M108 78 q12 8 10 20" fill="none" stroke="#6bbf8e" stroke-width="7" stroke-linecap="round"/>
+      ${sex === 'k'
+        ? `<g class="mascot-bow">
+             <path d="M88 26 q10 -9 15 -1 q-7 5 -15 1z" fill="#e8918b"/>
+             <path d="M88 26 q-2 -12 8 -12 q2 8 -8 12z" fill="#e8918b"/>
+             <circle cx="90" cy="26" r="3.5" fill="#d97f79"/>
+           </g>` : ''}
     </g>
     ${face === 'sleep'
       ? '<text class="mascot-z" x="100" y="34" font-size="17" fill="#6b665d">z</text>' +
