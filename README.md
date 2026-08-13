@@ -8,6 +8,29 @@ do przodu.
 Działa w przeglądarce, bez instalacji, bez konta i bez serwera.
 **Otwórz plik `index.html`** — to wszystko.
 
+## Jak otworzyć na telefonie
+
+Najwygodniej przez GitHub Pages — raz włączasz, potem masz ikonę na ekranie
+głównym jak zwykłą aplikację.
+
+1. W repozytorium na GitHubie: **Settings → Pages**.
+2. *Source*: **Deploy from a branch**.
+3. *Branch*: `claude/kuchnia-przepisy-projekt-ai3lg6`, katalog `/ (root)` → **Save**.
+4. Po 1–2 minutach strona żyje pod adresem:
+   `https://mieszkorrr-del.github.io/desktop-tutorial/`
+5. Otwórz ten adres na telefonie i dodaj do ekranu głównego:
+   - **Android (Chrome):** menu ⋮ → *Dodaj do ekranu głównego*
+   - **iPhone (Safari):** przycisk udostępniania → *Do ekranu początkowego*
+
+Aplikacja jest przygotowana jako PWA — otwiera się bez paska adresu, ma własną
+ikonę i **działa bez internetu** (przydaje się w sklepie i w kuchni). Do
+pierwszego uruchomienia potrzebny jest zasięg, potem już nie.
+
+Uwaga: GitHub Pages dla repozytoriów prywatnych wymaga płatnego planu. Jeśli
+repo jest prywatne, ustaw je jako publiczne albo skorzystaj z darmowego
+hostingu statycznego (Netlify, Cloudflare Pages) — wystarczy przeciągnąć tam
+folder projektu.
+
 ## Co potrafi
 
 ### 🧊 Co mam w lodówce
