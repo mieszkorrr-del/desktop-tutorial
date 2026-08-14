@@ -253,12 +253,25 @@ function renderDiaryAdd() {
       <button class="btn btn-primary" id="dm-add">Dodaj</button>
     </div>`;
   $('#dm-add').addEventListener('click', () => {
-    const name = $('#dm-name').value.trim(), kcal = parseNum($('#dm-kcal').value);
-    if (!name || !kcal) { alert('Podaj nazwę i kalorie.'); return; }
+    const name = $('#dm-name').value.trim();
+    const kcal = parseNum($('#dm-kcal').value);
+    const p = parseNum($('#dm-p').value) || 0;
+    const f = parseNum($('#dm-f').value) || 0;
+    const c = parseNum($('#dm-c').value) || 0;
+
+    /* Walidacja zakresów. Bez niej literówka (15000 zamiast 1500 albo
+       zgubiony minus) po cichu fałszowała bilans całego dnia. */
+    if (!name) { alert('Podaj nazwę posiłku.'); return; }
+    if (kcal === null || kcal <= 0 || kcal > 5000) {
+      alert('Kalorie podaj w zakresie 1–5000. Jeden posiłek rzadko przekracza 2000 kcal.');
+      return;
+    }
+    if ([p, f, c].some(x => x < 0 || x > 1000)) {
+      alert('Makroskładniki podaj w gramach, w zakresie 0–1000.');
+      return;
+    }
     addEntry({ name, kcal: Math.round(kcal),
-      protein: Math.round(parseNum($('#dm-p').value) || 0),
-      fat: Math.round(parseNum($('#dm-f').value) || 0),
-      carbs: Math.round(parseNum($('#dm-c').value) || 0) });
+      protein: Math.round(p), fat: Math.round(f), carbs: Math.round(c) });
     $('#dm-name').value = $('#dm-kcal').value = '';
   });
 }

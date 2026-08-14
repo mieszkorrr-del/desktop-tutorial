@@ -29,6 +29,9 @@
     --danger: #d97070;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
   }
+  /* Na jasnej zieleni biały tekst daje kontrast 2,2:1 — poniżej normy.
+     Ciemny tekst na tym samym tle to ok. 9:1. */
+  .btn-primary { color: #10231a; }
 }
 
 * { box-sizing: border-box; }
@@ -435,3 +438,37 @@ input:focus, select:focus, textarea:focus {
 }
 .pick:last-child { border-bottom: 0; }
 .pick:hover { background: var(--accent-soft); }
+
+/* ---------- Ostrzeżenia bezpieczeństwa treningu ---------- */
+.alarm {
+  border: 2px solid var(--danger); border-radius: var(--radius);
+  padding: .9rem 1rem; margin-top: .8rem; background: var(--surface-2);
+}
+.alarm h3 { color: var(--danger); margin: 0 0 .5rem; font-size: .98rem; }
+.alarm ul { margin: 0 0 .6rem; padding-left: 1.15rem; }
+.alarm li { margin-bottom: .3rem; font-size: .9rem; }
+
+/* ---------- Ergonomia dotyku (wytyczna Apple: 44×44) ---------- */
+.btn, .chip, .tab { min-height: 44px; }
+input, select, textarea { min-height: 44px; }
+input[type="checkbox"] { width: 24px; height: 24px; min-height: 24px; flex: 0 0 auto; }
+.pick, .shop-item, .slot, summary { min-height: 44px; }
+.pick, .shop-item { align-items: center; }
+summary { display: flex; align-items: center; }
+.fav-btn { width: 44px; height: 44px; display: grid; place-items: center; }
+.modal-close { width: 44px; height: 44px; }
+.hist-del { min-width: 44px; min-height: 44px; }
+.btn-sm { min-height: 36px; }
+
+/* Przyciski i pola nie mogą wypychać strony poza ekran telefonu */
+.row { flex-wrap: wrap; }
+.btn { max-width: 100%; white-space: normal; }
+
+/* ---------- Szybkie akcje na Panelu ---------- */
+.quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin-bottom: 1rem; }
+.quick .btn {
+  display: flex; flex-direction: column; gap: .2rem; align-items: center;
+  padding: .7rem .4rem; font-size: .82rem; min-height: 62px;
+  background: var(--surface); border: 1px solid var(--accent); color: var(--accent-ink);
+}
+.quick .btn span { font-size: 1.25rem; line-height: 1; }

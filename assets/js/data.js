@@ -1,7 +1,9 @@
 /* Baza przepisów — klasyczne, realne dania w wersji sprzyjającej redukcji.
-   Wartości odżywcze to szacunki na 1 porcję, liczone ze standardowych
-   gramatur produktów (tabele wartości odżywczych). Traktuj je jako
-   dobre przybliżenie (±10%), nie jako pomiar laboratoryjny. */
+   Wartości odżywcze na 1 porcję, przeliczone z gramatur składników
+   na podstawie tabel USDA i IŻŻ. Traktuj je jako dobre przybliżenie
+   (±10%), nie jako pomiar laboratoryjny — rzeczywista kaloryczność
+   zależy od tłustości mięsa, ilości tłuszczu na patelni i wielkości
+   warzyw, których nikt nie waży co do grama. */
 
 const MEALS = {
   sniadanie: 'Śniadanie',
@@ -18,7 +20,7 @@ const RECIPES = [
     meal: 'sniadanie',
     time: 10,
     servings: 1,
-    kcal: 385, protein: 28, fat: 9, carbs: 51,
+    kcal: 445, protein: 35, fat: 10, carbs: 51,
     tags: ['wysokobiałkowe', 'wegetariańskie', 'szybkie'],
     ingredients: [
       { name: 'płatki owsiane górskie', qty: 50, unit: 'g' },
@@ -41,7 +43,7 @@ const RECIPES = [
     meal: 'sniadanie',
     time: 12,
     servings: 1,
-    kcal: 330, protein: 24, fat: 21, carbs: 9,
+    kcal: 300, protein: 23, fat: 20, carbs: 5,
     tags: ['wysokobiałkowe', 'wegetariańskie', 'bezglutenowe', 'szybkie'],
     ingredients: [
       { name: 'jajka', qty: 3, unit: 'szt' },
@@ -64,7 +66,7 @@ const RECIPES = [
     meal: 'sniadanie',
     time: 8,
     servings: 1,
-    kcal: 335, protein: 32, fat: 8, carbs: 33,
+    kcal: 364, protein: 34, fat: 9, carbs: 35,
     tags: ['wysokobiałkowe', 'wegetariańskie', 'szybkie', 'bez gotowania'],
     ingredients: [
       { name: 'twaróg półtłusty', qty: 150, unit: 'g' },
@@ -178,7 +180,7 @@ const RECIPES = [
     meal: 'obiad',
     time: 35,
     servings: 2,
-    kcal: 550, protein: 42, fat: 24, carbs: 42,
+    kcal: 593, protein: 39, fat: 28, carbs: 42,
     tags: ['wysokobiałkowe', 'bezglutenowe', 'omega-3'],
     ingredients: [
       { name: 'filet z łososia', qty: 300, unit: 'g' },
@@ -255,7 +257,7 @@ const RECIPES = [
     meal: 'obiad',
     time: 40,
     servings: 3,
-    kcal: 470, protein: 45, fat: 15, carbs: 36,
+    kcal: 504, protein: 41, fat: 17, carbs: 46,
     tags: ['wysokobiałkowe', 'klasyk'],
     ingredients: [
       { name: 'mielone mięso z indyka', qty: 500, unit: 'g' },
@@ -354,7 +356,7 @@ const RECIPES = [
     meal: 'obiad',
     time: 20,
     servings: 2,
-    kcal: 430, protein: 40, fat: 22, carbs: 16,
+    kcal: 364, protein: 35, fat: 20, carbs: 11,
     tags: ['wysokobiałkowe', 'bezglutenowe', 'niskowęglowodanowe'],
     ingredients: [
       { name: 'pierś z kurczaka', qty: 250, unit: 'g' },
@@ -379,7 +381,7 @@ const RECIPES = [
     meal: 'obiad',
     time: 30,
     servings: 2,
-    kcal: 350, protein: 22, fat: 14, carbs: 34,
+    kcal: 390, protein: 21, fat: 20, carbs: 29,
     tags: ['wegetariańskie'],
     ingredients: [
       { name: 'cukinia', qty: 500, unit: 'g' },
@@ -405,7 +407,7 @@ const RECIPES = [
     meal: 'obiad',
     time: 60,
     servings: 4,
-    kcal: 380, protein: 38, fat: 12, carbs: 28,
+    kcal: 295, protein: 41, fat: 6, carbs: 20,
     tags: ['wysokobiałkowe', 'bezglutenowe', 'klasyk', 'meal prep'],
     ingredients: [
       { name: 'kapusta kiszona', qty: 700, unit: 'g' },
@@ -502,7 +504,7 @@ const RECIPES = [
     meal: 'kolacja',
     time: 18,
     servings: 2,
-    kcal: 340, protein: 32, fat: 11, carbs: 26,
+    kcal: 281, protein: 33, fat: 7, carbs: 18,
     tags: ['wysokobiałkowe', 'szybkie', 'niskowęglowodanowe'],
     ingredients: [
       { name: 'krewetki obrane (mrożone)', qty: 300, unit: 'g' },
@@ -528,7 +530,7 @@ const RECIPES = [
     meal: 'kolacja',
     time: 40,
     servings: 4,
-    kcal: 280, protein: 30, fat: 7, carbs: 24,
+    kcal: 228, protein: 25, fat: 3, carbs: 22,
     tags: ['wysokobiałkowe', 'bezglutenowe', 'niskokaloryczne', 'meal prep'],
     ingredients: [
       { name: 'pierś z kurczaka', qty: 400, unit: 'g' },
@@ -553,7 +555,7 @@ const RECIPES = [
     meal: 'kolacja',
     time: 20,
     servings: 2,
-    kcal: 420, protein: 38, fat: 12, carbs: 40,
+    kcal: 373, protein: 35, fat: 9, carbs: 35,
     tags: ['wysokobiałkowe', 'szybkie'],
     ingredients: [
       { name: 'tortilla pełnoziarnista', qty: 2, unit: 'szt' },
@@ -579,7 +581,7 @@ const RECIPES = [
     meal: 'deser',
     time: 15,
     servings: 4,
-    kcal: 210, protein: 22, fat: 6, carbs: 17,
+    kcal: 246, protein: 30, fat: 8, carbs: 13,
     tags: ['wysokobiałkowe', 'wegetariańskie', 'bezglutenowe', 'bez pieczenia'],
     ingredients: [
       { name: 'twaróg półtłusty (mielony)', qty: 500, unit: 'g' },
@@ -625,7 +627,7 @@ const RECIPES = [
     meal: 'deser',
     time: 35,
     servings: 2,
-    kcal: 175, protein: 3, fat: 7, carbs: 26,
+    kcal: 192, protein: 2, fat: 7, carbs: 30,
     tags: ['wegetariańskie', 'wegańskie', 'bezglutenowe', 'niskokaloryczne'],
     ingredients: [
       { name: 'jabłka', qty: 400, unit: 'g' },
@@ -667,7 +669,7 @@ const RECIPES = [
     meal: 'deser',
     time: 5,
     servings: 2,
-    kcal: 150, protein: 4, fat: 2, carbs: 30,
+    kcal: 164, protein: 4, fat: 2, carbs: 34,
     tags: ['wegetariańskie', 'bezglutenowe', 'szybkie', 'bez pieczenia'],
     ingredients: [
       { name: 'banan (mrożony, pokrojony)', qty: 300, unit: 'g' },
@@ -688,7 +690,7 @@ const RECIPES = [
     meal: 'przekaska',
     time: 3,
     servings: 1,
-    kcal: 200, protein: 14, fat: 11, carbs: 12,
+    kcal: 220, protein: 11, fat: 16, carbs: 10,
     tags: ['wegetariańskie', 'bezglutenowe', 'szybkie', 'bez gotowania'],
     ingredients: [
       { name: 'jogurt naturalny', qty: 200, unit: 'g' },
@@ -718,7 +720,7 @@ const RECIPES = [
     meal: 'przekaska',
     time: 5,
     servings: 1,
-    kcal: 255, protein: 27, fat: 4, carbs: 28,
+    kcal: 307, protein: 33, fat: 5, carbs: 33,
     tags: ['wysokobiałkowe', 'wegetariańskie', 'szybkie', 'bez gotowania'],
     ingredients: [
       { name: 'odżywka białkowa', qty: 30, unit: 'g' },
@@ -734,7 +736,7 @@ const RECIPES = [
     meal: 'przekaska',
     time: 3,
     servings: 1,
-    kcal: 160, protein: 17, fat: 6, carbs: 8,
+    kcal: 214, protein: 25, fat: 9, carbs: 8,
     tags: ['wysokobiałkowe', 'wegetariańskie', 'bezglutenowe', 'szybkie', 'bez gotowania'],
     ingredients: [
       { name: 'serek wiejski', qty: 200, unit: 'g' },
@@ -750,11 +752,11 @@ const TIPS = [
   'Deficyt 300–500 kcal dziennie to tempo, przy którym tracisz tłuszcz, a nie mięśnie. Szybciej ≠ lepiej.',
   'Waż się zawsze w tych samych warunkach: rano, po toalecie, przed śniadaniem. Reszta to szum.',
   'Wahania ±1,5 kg w ciągu doby to woda i zawartość jelit, nie tłuszcz. Patrz na średnią z tygodnia.',
-  'Białko: ok. 1,6–2,0 g na kg masy ciała. To ono chroni mięśnie w deficycie i najmocniej syci.',
+  'Białko: ok. 1,8 g na kg masy DOCELOWEJ. Przy nadwadze liczymy od wagi, do której zmierzasz — tkanka tłuszczowa białka nie potrzebuje.',
   'Nie pij kalorii. Sok, latte i piwo potrafią zjeść cały dzienny deficyt bez uczucia najedzenia.',
   'Warzywa do każdego głównego posiłku — objętość bez kalorii to najprostszy trik na sytość.',
   'Zaplanuj tydzień w niedzielę. Największym wrogiem diety jest głodna improwizacja o 20:00.',
-  '10 000 kroków dziennie spala u przeciętnej osoby ok. 300–400 kcal. To „darmowy” deficyt.',
+  '10 000 kroków to ok. 0,5 kcal na kilogram masy ciała na kilometr — im więcej ważysz, tym więcej spalasz. Przy 100 kg to grubo ponad 400 kcal.',
   'Jeden gorszy posiłek nie psuje tygodnia. Psuje go dopiero decyzja „i tak już przegrałem”.',
   'Sen poniżej 6 godzin podnosi grelinę (głód) i obniża leptynę (sytość). Śpij jak część diety.',
   'Alkohol na czas redukcji: im mniej, tym lepiej. Blokuje spalanie tłuszczu i rozhamowuje apetyt.',

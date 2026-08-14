@@ -29,15 +29,31 @@ const DEFAULT_STATE = {
   fasting: {}           // schemat i start postu przerywanego
 };
 
+/* Wymusza poprawny kształt danych. Uszkodzona kopia zapasowa albo
+   przerwany zapis potrafiły wcześniej ustawić np. weights na null,
+   co wywracało pół aplikacji przy każdym uruchomieniu. */
+function normalize(st) {
+  const base = structuredClone(DEFAULT_STATE);
+  const out = { ...base, ...(st && typeof st === 'object' ? st : {}) };
+  for (const k of ['weights', 'favorites', 'custom', 'bought', 'workouts', 'dishes']) {
+    if (!Array.isArray(out[k])) out[k] = [];
+  }
+  for (const k of ['plan', 'habits', 'diary', 'fasting']) {
+    if (!out[k] || typeof out[k] !== 'object' || Array.isArray(out[k])) out[k] = {};
+  }
+  out.profile = { ...base.profile, ...(out.profile && typeof out.profile === 'object' ? out.profile : {}) };
+  out.weights = out.weights.filter(w => w && typeof w.date === 'string' && Number.isFinite(w.kg));
+  out.workouts = out.workouts.filter(w => w && typeof w.date === 'string' && Number.isFinite(w.kcal));
+  return out;
+}
+
 let state = load();
 
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return structuredClone(DEFAULT_STATE);
-    const parsed = JSON.parse(raw);
-    return { ...structuredClone(DEFAULT_STATE), ...parsed,
-             profile: { ...DEFAULT_STATE.profile, ...(parsed.profile || {}) } };
+    return normalize(JSON.parse(raw));
   } catch (e) {
     console.warn('Nie udało się wczytać zapisanych danych, startuję od zera.', e);
     return structuredClone(DEFAULT_STATE);
@@ -70,8 +86,7 @@ const Store = {
   },
 
   import(json) {
-    const parsed = JSON.parse(json);
-    state = { ...structuredClone(DEFAULT_STATE), ...parsed };
+    state = normalize(JSON.parse(json));
     save();
   },
 
@@ -190,13 +205,19 @@ const Calc = {
     return Math.ceil((weight - target) / pace);
   },
 
-  /* Średnia krocząca z 7 dni — jedyna sensowna miara postępu. */
+  /* Średnia z ostatnich 7 DNI wobec 7 dni wcześniejszych. Wcześniej
+     liczone było 7 ostatnich POMIARÓW — przy ważeniu raz w tygodniu
+     "trend 7-dniowy" obejmował faktycznie 14 tygodni. */
   trend(weights) {
     if (weights.length < 2) return null;
-    const sorted = [...weights].sort((a, b) => a.date.localeCompare(b.date));
-    const last = sorted.slice(-7);
-    const prev = sorted.slice(-14, -7);
-    if (!prev.length) return null;
+    const day = 864e5;
+    const now = Date.parse(new Date().toISOString().slice(0, 10));
+    const inRange = (from, to) => weights.filter(w => {
+      const t = Date.parse(w.date);
+      return Number.isFinite(t) && t > now - from * day && t <= now - to * day;
+    });
+    const last = inRange(7, -1), prev = inRange(14, 7);
+    if (!last.length || !prev.length) return null;
     const avg = arr => arr.reduce((s, w) => s + w.kg, 0) / arr.length;
     return +(avg(last) - avg(prev)).toFixed(2);
   }

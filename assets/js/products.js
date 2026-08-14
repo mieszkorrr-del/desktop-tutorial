@@ -30,13 +30,13 @@ const PRODUCTS = {
   'udko z kurczaka (bez skóry)':[135, 19.0, 6.5, 0],
   'schab':                 [136, 21.0, 5.7, 0],
   'mielone wieprzowo-wołowe':[221, 17.0, 17.0, 0],
-  'mielone z indyka':      [104, 20.0, 2.5, 0],
+  'mielone z indyka':      [158, 19.0, 8.5, 0],
   'kiełbasa zwyczajna':    [298, 14.0, 27.0, 1.0],
   'szynka drobiowa':       [110, 17.0, 4.0, 1.5],
   'dorsz (filet)':         [82, 17.7, 0.7, 0],
   'mintaj (filet)':        [73, 16.5, 0.9, 0],
   'makrela wędzona':       [221, 20.0, 15.5, 0],
-  'śledź solony':          [161, 18.0, 9.8, 0],
+  'śledź solony':          [218, 18.4, 15.8, 0],
   'tuńczyk w sosie własnym':[103, 23.5, 1.0, 0],
   'fasola biała z puszki': [91, 6.9, 0.5, 15.0],
   'fasola czerwona z puszki':[93, 7.0, 0.5, 15.5],
@@ -77,7 +77,7 @@ const PRODUCTS = {
   'indyk (pierś)':         [104, 24.0, 1.0, 0],
   'wątróbka drobiowa':     [128, 20.0, 4.8, 1.0],
   'ser feta':              [264, 14.2, 21.3, 4.1],
-  'mozzarella':            [253, 18.0, 19.0, 2.0],
+  'mozzarella':            [253, 22.0, 19.0, 2.0],
   'jajka przepiórcze':     [158, 13.0, 11.0, 0.4],
   'kasza jaglana (sucha)': [346, 10.8, 3.9, 66.0],
   'kasza kuskus (sucha)':  [376, 12.8, 0.6, 77.0],
@@ -127,4 +127,4 @@ const PRODUCTS = {
 };
 
 /* Waga typowej sztuki w gramach. */
-const PRODUCT_SZT = { 'jajka': 55, 'banan': 100, 'jabłka': 150, 'cebula': 100 };
+const PRODUCT_SZT = { 'jajka': 50, 'banan': 100, 'jabłka': 150, 'cebula': 100 };

@@ -31,7 +31,7 @@ const DAILY_TASKS = [
   { t: 'Zrób 3 serie pompek o blat', why: 'Góra ciała też potrzebuje bodźca, żeby przetrwać redukcję.' },
   { t: 'Ugotuj obiad na dwa dni', why: 'Jedno gotowanie, dwa posiłki pod kontrolą.' },
   { t: 'Nie podjadaj po kolacji', why: 'Wieczorne podjadanie to najczęstszy cichy nadmiar kalorii.' },
-  { t: 'Zrób 8 tysięcy kroków', why: 'To około 300 kcal deficytu bez żadnego treningu.' },
+  { t: 'Zrób 8 tysięcy kroków', why: 'Przy Twojej masie to grubo ponad 300 kcal wydatku — bez wchodzenia na bieżnię.' },
   { t: 'Sprawdź skład kupowanego produktu', why: 'Cukier w rzeczach "fit" to reguła, nie wyjątek.' },
   { t: 'Zjedz zupę na obiad', why: 'Duża objętość, mało kalorii, długa sytość.' },
   { t: 'Odłóż widelec między kęsami', why: 'Sygnał sytości dociera do mózgu po 15–20 minutach.' },
@@ -41,7 +41,7 @@ const DAILY_TASKS = [
   { t: 'Pochwal się przed sobą jednym postępem', why: 'Redukcja to miesiące — trzeba umieć zauważyć, że idzie.' }
 ];
 
-/* Maskotka: awokado o imieniu Grzesiek. Reaguje na to, ile zrobiłeś
+/* Maskotka: awokado — Błażej albo Gabrysia, zależnie od płci w profilu. Reaguje na to, ile zrobiłeś
    dzisiaj i jak długa jest Twoja seria. Rysowana w SVG, animowana CSS —
    bez żadnych zewnętrznych plików, działa offline. */
 const MASCOT_STATES = {
@@ -119,7 +119,7 @@ function mascotSVG(face, sex) {
   };
 
   return `<svg class="mascot-svg" viewBox="0 0 130 150" data-face="${face}" role="img"
-    aria-label="Maskotka Grzesiek — stan: ${face}">
+    aria-label="Maskotka — stan: ${face}">
     <g class="mascot-body">
       <!-- ciało awokado -->
       <path d="M65 14 c26 0 44 22 44 50 c0 32 -20 62 -44 62 c-24 0 -44 -30 -44 -62 c0 -28 18 -50 44 -50 z"

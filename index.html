@@ -48,6 +48,8 @@
       <button class="btn btn-primary" data-goto="profil">Uzupełnij profil</button>
     </div>
 
+    <div class="quick" id="panel-quick"></div>
+
     <div class="panel-top">
       <div class="stat-grid" id="panel-stats"></div>
       <div class="card mascot-card" id="panel-mascot"></div>
@@ -148,17 +150,15 @@
         Sól, pieprz, oliwa i podstawowe przyprawy są zakładane z góry.
       </p>
       <textarea id="fridge-input" rows="3" placeholder="kurczak, ryż, papryka, cebula, jogurt naturalny…"></textarea>
-      <div class="row">
-        <div class="chips" id="fridge-meal">
+      <div class="chips" id="fridge-meal">
           <button class="chip is-active" data-meal="all">Wszystko</button>
           <button class="chip" data-meal="sniadanie">Śniadanie</button>
           <button class="chip" data-meal="obiad">Obiad</button>
           <button class="chip" data-meal="kolacja">Kolacja</button>
           <button class="chip" data-meal="deser">Deser</button>
-          <button class="chip" data-meal="przekaska">Przekąska</button>
-        </div>
-        <button class="btn btn-primary" id="fridge-go">Szukaj propozycji</button>
+        <button class="chip" data-meal="przekaska">Przekąska</button>
       </div>
+      <button class="btn btn-primary" id="fridge-go" style="width:100%">Szukaj propozycji</button>
       <label class="habit" style="margin-top:.2rem">
         <input type="checkbox" id="fridge-strict">
         <span>Pokaż tylko to, co zrobię bez wychodzenia do sklepu</span>
@@ -228,10 +228,7 @@
   <!-- ======================= PRZEPISY ======================= -->
   <section class="view" id="view-przepisy">
     <div class="card filters">
-      <div class="row">
-        <input type="search" id="search" placeholder="Szukaj przepisu lub składnika…">
-        <button class="btn btn-primary" id="add-recipe-open">+ Dodaj własny przepis</button>
-      </div>
+      <input type="search" id="search" placeholder="Szukaj przepisu lub składnika…" style="margin-bottom:.6rem">
       <div class="chips" id="filter-meal">
         <button class="chip is-active" data-meal="all">Wszystkie</button>
         <button class="chip" data-meal="sniadanie">Śniadania</button>
@@ -253,6 +250,7 @@
         </label>
       </div>
     </div>
+    <div class="row"><button class="btn btn-ghost" id="add-recipe-open">+ Dodaj własny przepis</button></div>
     <p class="muted small" id="recipe-count"></p>
     <div class="recipe-grid" id="recipe-list"></div>
   </section>

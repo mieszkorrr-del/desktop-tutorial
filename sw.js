@@ -2,7 +2,7 @@
    albo w kuchni z kiepskim zasięgiem. Strategia: najpierw sieć (żeby
    aktualizacje wchodziły od razu), z cache jako zapasem. */
 
-const CACHE = 'kuchnia-v7';
+const CACHE = 'kuchnia-v8';
 const ASSETS = [
   './',
   './manifest.json',

@@ -120,6 +120,13 @@ function renderPanel() {
   }
   $('#panel-stats').innerHTML = stats.join('');
 
+  const lastKg = latestWeight(s.weights);
+  $('#panel-quick').innerHTML = `
+    <button class="btn" data-quick="waga"><span>⚖</span>Zważ się</button>
+    <button class="btn" data-quick="jedzenie"><span>🍽</span>Dodaj posiłek</button>
+    <button class="btn" data-quick="trening"><span>🏃</span>Zapisz trening</button>`;
+  $('#panel-quick').dataset.lastKg = lastKg ?? '';
+
   /* dzisiejszy plan */
   const dayIdx = (new Date().getDay() + 6) % 7;   // pon = 0
   const slots = ['sniadanie', 'obiad', 'kolacja', 'przekaska', 'deser'];
@@ -168,10 +175,15 @@ function renderPanel() {
   $('#panel-tip').textContent = TIPS[tipIndex % TIPS.length];
 }
 
-/* Dzień jest "pełny", gdy odhaczone są trzy nawyki i zadanie dnia.
-   Seria liczy kolejne pełne dni wstecz od dziś. */
-function dayComplete(h) {
-  return !!(h && h.water && h.steps && h.protein && h.task);
+/* Dzień liczy się do serii, gdy faktycznie prowadziłeś dziennik: jest wpis
+   o jedzeniu albo pomiar wagi. To mierzy nawyk, który naprawdę decyduje
+   o wyniku — a nie to, czy pamiętałeś kliknąć checkbox z krokami. */
+function dayComplete(h, dateKey) {
+  const s = Store.get();
+  const ateSomething = ((s.diary || {})[dateKey] || []).length > 0;
+  const weighed = (s.weights || []).some(w => w.date === dateKey);
+  const habitsDone = !!(h && h.water && h.steps && h.protein && h.task);
+  return ateSomething || weighed || habitsDone;
 }
 
 function streakDays() {
@@ -179,10 +191,10 @@ function streakDays() {
   let n = 0;
   const d = new Date();
   // dzisiaj liczymy tylko jeśli już zamknięty — inaczej seria migałaby w ciągu dnia
-  if (!dayComplete(s.habits[today()])) d.setDate(d.getDate() - 1);
+  if (!dayComplete(s.habits[today()], today())) d.setDate(d.getDate() - 1);
   for (;;) {
-    const key = d.toISOString().slice(0, 10);
-    if (!dayComplete(s.habits[key])) break;
+    const key = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    if (!dayComplete(s.habits[key], key)) break;
     n++;
     d.setDate(d.getDate() - 1);
   }
@@ -287,6 +299,36 @@ function card(label, value, unit, note, cls = '') {
     ${note ? `<div class="stat-note ${cls}">${note}</div>` : ''}
   </div>`;
 }
+
+/* Szybkie akcje: trzy najczęstsze czynności dnia bez szukania zakładki
+   w pasku, który na telefonie mieści tylko trzy pozycje. */
+$('#panel-quick').addEventListener('click', e => {
+  const btn = e.target.closest('[data-quick]');
+  if (!btn) return;
+  const what = btn.dataset.quick;
+
+  if (what === 'waga') {
+    const last = Store.get().profile.weight;
+    const val = prompt('Ile ważysz dzisiaj? (kg)', last ? fmt(last) : '');
+    if (val === null) return;
+    const kg = parseNum(val);
+    if (kg === null || kg < 20 || kg > 400) { alert('Podaj wagę w kilogramach, np. 106,4.'); return; }
+    Store.update(st => {
+      const d = today();
+      const ex = st.weights.find(w => w.date === d);
+      if (ex) ex.kg = kg; else st.weights.push({ date: d, kg });
+      st.profile.weight = latestWeight(st.weights);
+    });
+    renderPanel();
+    alert(`Zapisano ${fmt(kg)} kg.`);
+    return;
+  }
+  if (what === 'jedzenie') { showView('dziennik'); return; }
+  if (what === 'trening') {
+    showView('treningi');
+    setTimeout(() => $('#t-min') && $('#t-min').focus(), 250);
+  }
+});
 
 let tipIndex = Math.floor(Math.random() * TIPS.length);
 $('#tip-next').addEventListener('click', () => {
@@ -606,8 +648,42 @@ function renderTraining() {
       <p class="muted small">Przy BMI powyżej 30 warto zrobić podstawowe badania
       i skonsultować start z lekarzem — zwłaszcza jeśli masz nadciśnienie,
       cukrzycę, problemy z sercem albo od dawna nie ćwiczyłeś.</p>` : ''}
+
     <p class="muted">Trzy do czterech sesji bieżni tygodniowo plus dwa treningi siłowe.
-    Cardio robi deficyt, siła decyduje o tym, czy tracisz tłuszcz, czy mięśnie.</p>`;
+    Cardio robi deficyt, siła decyduje o tym, czy tracisz tłuszcz, czy mięśnie.</p>
+
+    <div class="alarm">
+      <h3>Kiedy natychmiast przerwać trening</h3>
+      <p>Przerwij wysiłek i skontaktuj się z lekarzem, jeśli poczujesz:</p>
+      <ul>
+        <li><strong>ból lub ucisk w klatce piersiowej</strong> — także promieniujący do ramienia, żuchwy albo pleców</li>
+        <li><strong>duszność nieproporcjonalną do wysiłku</strong> — brakuje Ci tchu bardziej, niż wynikałoby z tempa</li>
+        <li><strong>zawroty głowy, mroczki, uczucie zbliżającego się omdlenia</strong></li>
+        <li><strong>kołatanie serca lub nierówne bicie</strong></li>
+        <li><strong>zimny pot z nudnościami</strong></li>
+        <li><strong>ostry ból stawu albo łydki</strong> — nie mięśni, tylko stawu</li>
+      </ul>
+      <p class="small">Tego się nie „przechodzi". Zejdź z bieżni, usiądź, a jeśli objawy
+      nie ustępują w kilka minut — dzwoń po pomoc. Lepiej przerwać sto razy niepotrzebnie
+      niż raz za późno.</p>
+    </div>
+
+    <details class="slot" style="margin-top:.7rem">
+      <summary><strong>Zanim zaczniesz — 6 pytań kontrolnych</strong></summary>
+      <p class="small" style="margin-top:.5rem">Jeśli na którekolwiek odpowiadasz „tak",
+      skonsultuj start programu z lekarzem:</p>
+      <ol class="small">
+        <li>Czy lekarz kiedykolwiek powiedział Ci, że masz problem z sercem?</li>
+        <li>Czy odczuwasz ból w klatce piersiowej w spoczynku albo przy wysiłku?</li>
+        <li>Czy w ostatnim roku straciłeś przytomność lub miałeś zawroty głowy?</li>
+        <li>Czy masz problem z kością albo stawem, który wysiłek może nasilić?</li>
+        <li>Czy bierzesz leki na ciśnienie, serce albo cukrzycę?</li>
+        <li>Czy jest jakikolwiek inny powód, dla którego nie powinieneś ćwiczyć?</li>
+      </ol>
+      <p class="small muted">Uwaga przy lekach: beta-blokery zmieniają reakcję tętna na wysiłek,
+      więc ocena po pulsie zawodzi. Leki na cukrzycę w połączeniu z treningiem i deficytem
+      zwiększają ryzyko niedocukrzenia — miej przy sobie coś słodkiego.</p>
+    </details>`;
 
   /* statystyki */
   const week = trainingWeek();
@@ -621,7 +697,7 @@ function renderTraining() {
   $('#training-stats').innerHTML = [
     card('Tydzień programu', week, `z 12`, TREADMILL[week - 1].desc.slice(0, 60) + '…'),
     card('Sesje (7 dni)', last7.length, '', `${min7} minut łącznie`),
-    card('Spalone (7 dni)', kcal7, 'kcal', kcal7 ? `ok. ${(kcal7 / 7700).toFixed(2)} kg tłuszczu` : ''),
+    card('Spalone (7 dni)', kcal7, 'kcal', kcal7 ? 'wydatek, nie ubytek tłuszczu' : ''),
     card('Spalone dziś', todayKcal, 'kcal', todayKcal ? 'dobra robota' : 'jeszcze nic', todayKcal ? 'good' : '')
   ].join('');
 
@@ -635,7 +711,11 @@ function renderTraining() {
       ${est ? `<br><span class="muted">Szacunkowo ok. ${est} kcal na sesję, ${est * t.sessions} kcal w tygodniu.</span>` : ''}
       <p style="margin:.6rem 0 0">${t.desc}</p>
     </div>
-    ${!s.trainingStart ? '<p class="muted small">Program wystartuje przy pierwszym zapisanym treningu.</p>' : ''}`;
+    ${!s.trainingStart ? '<p class="muted small">Program wystartuje przy pierwszym zapisanym treningu.</p>' : ''}
+    <h3 style="margin-top:.9rem">Jak wygląda każda sesja</h3>
+    ${SESSION_FRAME.map(f => `<div class="today-row">
+      <span class="meal">${esc(f.phase)} <span class="muted">· ${esc(f.time)}</span></span>
+      <span>${esc(f.what)}</span></div>`).join('')}`;
 
   $('#treadmill-all').innerHTML = TREADMILL.map(x => `
     <div class="today-row ${x.week === week ? '' : 'muted'}">
@@ -667,7 +747,8 @@ function renderTraining() {
             </div>
           </div>
         </details>`).join('')}
-      <p class="muted small">Przerwa między seriami 60–90 s. Ostatnie 2 powtórzenia mają być trudne.</p>`;
+      <p class="muted small">Przerwa między seriami 60–90 s. Ostatnie 2 powtórzenia mają być trudne.</p>
+      <p class="tip-box small"><strong>Kiedy dołożyć ciężar:</strong> ${esc(STRENGTH_PROGRESSION)}</p>`;
   };
   block('A', '#strength-a');
   block('B', '#strength-b');

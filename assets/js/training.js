@@ -8,12 +8,12 @@
    Wartości z Kompendium Aktywności Fizycznej (Ainsworth i wsp.). */
 const MET = {
   marsz_wolny: 3.0,      // 4,0–4,5 km/h, płasko
-  marsz: 3.8,            // 5,0 km/h, płasko
-  marsz_szybki: 5.0,     // 5,5–6,0 km/h, płasko
-  marsz_nachylenie: 6.3, // 5,0–5,5 km/h, nachylenie 4–6%
-  marsz_stromy: 8.0,     // 5,0 km/h, nachylenie 8–12%
+  marsz: 3.5,            // 5,0 km/h, płasko
+  marsz_szybki: 4.3,     // 5,5–6,0 km/h, płasko
+  marsz_nachylenie: 5.6, // 5,0–5,5 km/h, nachylenie 4–6%
+  marsz_stromy: 7.4,     // 5,0–5,5 km/h, nachylenie 8–12%
   trucht: 8.3,           // 8 km/h
-  sila: 5.0              // trening oporowy w umiarkowanym tempie
+  sila: 3.5              // trening oporowy początkującego, z przerwami
 };
 
 /* 12 tygodni progresji. Każdy tydzień: liczba sesji, czas, prędkość,
@@ -25,26 +25,26 @@ const TREADMILL = [
     desc: 'Wchodzenie w rytm. Masz móc swobodnie rozmawiać przez cały czas — jeśli nie możesz, zwolnij.' },
   { week: 2,  sessions: 3, minutes: 30, speed: '4,5–5,0', incline: '2%', met: 'marsz',
     desc: 'Ten sam wysiłek, 5 minut dłużej. Nic więcej nie zmieniamy.' },
-  { week: 3,  sessions: 4, minutes: 30, speed: '5,0', incline: '4%', met: 'marsz_nachylenie',
-    desc: 'Czwarta sesja w tygodniu i pierwsze prawdziwe nachylenie. Nie trzymaj się poręczy — to obniża koszt energetyczny o jedną trzecią.' },
-  { week: 4,  sessions: 4, minutes: 35, speed: '5,0', incline: '4%', met: 'marsz_nachylenie',
-    desc: 'Utrwalamy. Jeśli tydzień 3 był ciężki, powtórz go zamiast iść dalej — to nie jest cofanie się.' },
+  { week: 3,  sessions: 4, minutes: 30, speed: '5,0', incline: '2%', met: 'marsz',
+    desc: 'Czwarta sesja w tygodniu — i na razie NIC więcej. Dokładanie objętości i nachylenia naraz to najczęstszy moment kontuzji.' },
+  { week: 4,  sessions: 4, minutes: 30, speed: '5,0', incline: '4%', met: 'marsz_nachylenie',
+    desc: 'Teraz pierwsze prawdziwe nachylenie, przy niezmienionym czasie. Nie trzymaj się poręczy — to obniża koszt energetyczny o jedną trzecią.' },
   { week: 5,  sessions: 4, minutes: 35, speed: '5,0–5,5', incline: '5%', met: 'marsz_nachylenie',
     desc: 'Pierwsze interwały nachylenia: 3 minuty na 5%, 2 minuty na 2%, i tak na zmianę.' },
   { week: 6,  sessions: 4, minutes: 40, speed: '5,0–5,5', incline: '5%', met: 'marsz_nachylenie',
     desc: 'Czterdzieści minut to próg, od którego sesja realnie liczy się w tygodniowym bilansie.' },
   { week: 7,  sessions: 4, minutes: 40, speed: '5,5', incline: '6%', met: 'marsz_nachylenie',
     desc: 'Interwały: 4 minuty na 6%, 2 minuty na 2%. Oddech ma być wyraźnie przyspieszony, ale kontrolowany.' },
-  { week: 8,  sessions: 4, minutes: 40, speed: '5,5', incline: '8%', met: 'marsz_stromy',
-    desc: 'Ostre podbiegi marszem: 3 minuty na 8%, 3 minuty na 2%. To spala więcej niż trucht i nie obciąża kolan.' },
-  { week: 9,  sessions: 4, minutes: 45, speed: '5,5', incline: '6–8%', met: 'marsz_stromy',
-    desc: 'Najdłuższe sesje programu. Jeśli waga spadła o 5+ kg, kolana już to odczuły na plus.' },
+  { week: 8,  sessions: 3, minutes: 30, speed: '5,0', incline: '4%', met: 'marsz_nachylenie',
+    desc: 'TYDZIEŃ LŻEJSZY. Mniej objętości, ta sama technika. To nie jest nagroda ani cofnięcie — regeneracja przy deficycie idzie wolniej i organizm musi nadgonić.' },
+  { week: 9,  sessions: 4, minutes: 45, speed: '5,5', incline: '7%', met: 'marsz_stromy',
+    desc: 'Wracamy z zapasem. Interwały: 3 minuty na 7%, 3 minuty na 2%. Jeśli waga spadła o 5+ kg, kolana już to odczuły na plus.' },
   { week: 10, sessions: 4, minutes: 45, speed: '5,5–6,0', incline: '6%', met: 'marsz_stromy',
     desc: 'Podnosimy prędkość. Trucht wprowadzaj TYLKO jeśli nie masz bólu kolan ani stóp — 1 minuta truchtu na 4 minuty marszu.' },
   { week: 11, sessions: 4, minutes: 45, speed: '6,0', incline: '4–8%', met: 'marsz_stromy',
     desc: 'Mieszane: 10 min rozgrzewki, 25 min interwałów nachylenia, 10 min schłodzenia.' },
-  { week: 12, sessions: 5, minutes: 45, speed: '6,0', incline: '4–8%', met: 'marsz_stromy',
-    desc: 'Tydzień sprawdzianu. Piąta sesja i utrzymanie tempa — po nim program zaczyna się od nowa, ale z niższą masą ciała.' }
+  { week: 12, sessions: 4, minutes: 45, speed: '6,0', incline: '4–8%', met: 'marsz_stromy',
+    desc: 'Tydzień sprawdzianu. Utrzymaj tempo z tygodnia 11 — po nim program zaczyna się od nowa, ale z niższą masą ciała i mocniejszymi nogami.' }
 ];
 
 /* Trening siłowy — dwie sesje na zmianę (A, B), bez sprzętu.
@@ -56,10 +56,10 @@ const STRENGTH = {
     name: 'Trening A — nogi i plecy',
     exercises: [
       { name: 'Przysiad do krzesła', sets: '3 × 8–12', fig: 'przysiad',
-        how: 'Stań tyłem do krzesła, opuszczaj się aż pośladki dotkną siedziska, wstań. Kolana kieruj na zewnątrz, ciężar na piętach.',
+        how: 'Stań tyłem do krzesła, opuszczaj się aż pośladki dotkną siedziska, wstań. Kolana kieruj na zewnątrz, ciężar na całej stopie — nie na samych piętach.',
         why: 'Największa grupa mięśniowa ciała — najwięcej spalonych kalorii i ochrona mięśni ud w deficycie.' },
       { name: 'Martwy ciąg z plecakiem', sets: '3 × 10–12', fig: 'ciag',
-        how: 'Plecak w dłoniach, nogi lekko ugięte, plecy proste. Odchyl biodra w tył, opuść plecak do połowy goleni, wróć napinając pośladki.',
+        how: 'Plecak w dłoniach, nogi lekko ugięte, plecy proste. Odchyl biodra w tył, opuść plecak do wysokości kolan, wróć napinając pośladki. Niżej schodź dopiero wtedy, gdy plecy zostają proste.',
         why: 'Wzmacnia całą tylną taśmę ciała — to ona odciąża odcinek lędźwiowy przy dużej masie brzucha.' },
       { name: 'Wiosłowanie plecakiem w opadzie', sets: '3 × 10–12', fig: 'wioslo',
         how: 'Pochyl się z prostymi plecami, plecak w obu rękach, przyciągaj go do brzucha ściągając łopatki.',
@@ -68,7 +68,7 @@ const STRENGTH = {
         how: 'Leż na plecach, stopy przy pośladkach. Unieś biodra, ściśnij pośladki na sekundę u góry, opuść.',
         why: 'Buduje pośladki bez żadnego obciążenia kolan.' },
       { name: 'Wznosy na palce', sets: '3 × 15–20', fig: 'palce',
-        how: 'Stań na stopniu lub progu, opuść pięty poniżej poziomu, unieś się wysoko.',
+        how: 'Pierwsze 4 tygodnie na płaskiej podłodze, tylko ruch w górę. Od tygodnia 5 możesz stanąć na stopniu i opuszczać pięty poniżej poziomu.',
         why: 'Łydki amortyzują każdy krok na bieżni — silniejsze łydki to mniej bólu stóp.' }
     ]
   },
@@ -150,16 +150,35 @@ const ALTS = {
   ]
 };
 
-/* Tygodniowy układ: bieżnia + siła nie powinny lądować tego samego dnia
-   na starcie, bo regeneracja przy deficycie jest wolniejsza. */
+/* Każda sesja bieżni ma tę samą ramę. Przy dużej masie ciała wejście
+   od razu na nachylenie to skok ciśnienia i pełne obciążenie zimnego
+   rozcięgna podeszwowego. */
+const SESSION_FRAME = [
+  { phase: 'Rozgrzewka', time: '5 min', what: 'Marsz 3,5–4 km/h, bez nachylenia. Ma być za łatwo.' },
+  { phase: 'Część główna', time: 'wg tygodnia', what: 'Prędkość i nachylenie z planu na dany tydzień.' },
+  { phase: 'Schłodzenie', time: '5 min', what: 'Marsz 3,5 km/h, nachylenie 0%. Tętno ma zejść, zanim zejdziesz z bieżni.' },
+  { phase: 'Rozciąganie', time: '2 min', what: 'Łydka o ścianę i zginacz biodra w wykroku — po 30 s na stronę.' }
+];
+
+/* Progresywne przeciążenie — bez tego trening siłowy przestaje chronić
+   mięśnie po ok. czterech tygodniach, czyli przestaje robić to, po co jest. */
+const STRENGTH_PROGRESSION =
+  'Gdy w KAŻDEJ serii zrobisz górną liczbę powtórzeń (np. 3 × 12), dołóż ' +
+  'litr wody do plecaka i wróć do dolnej granicy (3 × 8). Przy ćwiczeniach ' +
+  'bez obciążenia zamiast wody zmień wersję na trudniejszą — np. pompki ' +
+  'z blatu na krzesło. To jedyny sposób, żeby siła dalej działała.';
+
+/* Tygodniowy układ: bieżnia i siła nie lądują tego samego dnia, a dni
+   odpoczynku są dwa — przy deficycie 500 kcal regeneracja jest wolniejsza
+   i jeden dzień nie wystarcza osobie zaczynającej od zera. */
 const WEEK_TEMPLATE = [
   { day: 'Poniedziałek', plan: 'Bieżnia' },
   { day: 'Wtorek', plan: 'Siła A' },
   { day: 'Środa', plan: 'Bieżnia' },
-  { day: 'Czwartek', plan: 'Odpoczynek lub spacer' },
+  { day: 'Czwartek', plan: 'Odpoczynek' },
   { day: 'Piątek', plan: 'Bieżnia' },
   { day: 'Sobota', plan: 'Siła B' },
-  { day: 'Niedziela', plan: 'Bieżnia lub odpoczynek' }
+  { day: 'Niedziela', plan: 'Odpoczynek lub spokojny spacer' }
 ];
 
 const TRAINING_TIPS = [
@@ -170,5 +189,8 @@ const TRAINING_TIPS = [
   'Buty do biegania z amortyzacją, nie trampki. Przy Twojej masie to nie jest fanaberia, tylko ochrona ścięgna Achillesa i rozcięgna podeszwowego.',
   'Dzień odpoczynku to część planu, nie odpuszczenie. Mięsień rośnie w regeneracji, nie w trakcie serii.',
   'Jeśli ważysz się po treningu, zobaczysz spadek — to woda wypocona, wraca po wypiciu. Waż się rano, przed treningiem.',
-  'Nawodnienie: przy 45 minutach marszu tracisz ok. 0,5–1 litra potu. Uzupełnij, bo odwodnienie potrafi udawać głód.'
+  'Nawodnienie: przy 45 minutach marszu tracisz ok. 0,5–1 litra potu. Uzupełnij, bo odwodnienie potrafi udawać głód.',
+  'Skala wysiłku 1–10: przez większość sesji trzymaj 6–7, czyli "ciężko, ale dam radę mówić krótkimi zdaniami". Powyżej 8 schodź z nachylenia.',
+  'Bierzesz leki na ciśnienie? Beta-blokery zaniżają tętno, więc pomiar pulsu przestaje mówić prawdę o wysiłku. Kieruj się oddechem i skalą 1–10.',
+  'Bierzesz leki na cukrzycę? Trening plus deficyt to ryzyko niedocukrzenia. Miej przy sobie coś słodkiego i nie ćwicz na zupełnie pusty żołądek.'
 ];
