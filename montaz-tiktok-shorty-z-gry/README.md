@@ -126,11 +126,15 @@ są warianty, nie jedna sztywna rekomendacja:
    — jeśli grasz w jedną z 10 obsługiwanych gier (Fortnite, Apex, Valorant,
    CoD, Overwatch, Minecraft, R6 Siege, Destiny 2, PUBG, Rocket League).
    Ma gotowy instalator, sam wykrywa killi/eliminacje (YOLOv8).
-2. **[autoshorts](https://github.com/divyaprakash0426/autoshorts)** — jeśli
-   grasz w cokolwiek innego. ⚠️ **Nieaktualne założenie:** ten punkt zakładał
-   kartę Nvidia. Potwierdzone GPU to **AMD Radeon RX 9070 XT** — `autoshorts`
-   wymaga CUDA/Nvidia wprost w swoim README, więc **prawdopodobnie nie zadziała**
-   bez sprawdzenia wsparcia ROCm, którego nie weryfikowałem. Nie polecam bez testu.
+2. ~~**[autoshorts](https://github.com/divyaprakash0426/autoshorts)**~~ —
+   **ODRZUCONE, zweryfikowane.** README projektu wymaga wprost: `"NVIDIA GPU
+   with CUDA support"`, `"CUDA Toolkit with nvcc"`, `cupy` (CUDA-accelerated
+   NumPy — nie ma tu ścieżki ROCm, to osobny pakiet od zera) i NVENC do
+   renderu, a Docker odpala się przez `docker run --gpus all` (NVIDIA Container
+   Toolkit, nie działa z AMD). **Zero wzmianek o AMD/ROCm w całym repo.** Na
+   potwierdzonym GPU **AMD Radeon RX 9070 XT** to się nie uruchomi bez
+   przepisania całego backendu GPU — nie testować, nie próbować "obejść".
+   Przeniesione do `docs/ODRZUCONE.md`.
 3. **[short-video-maker](https://github.com/gyoridavid/short-video-maker)** /
    **[openshorts](https://github.com/mutonby/openshorts)** — jeśli docelowo
    chcesz postawić trwały serwis (Docker) do masowej produkcji shortów, nie
