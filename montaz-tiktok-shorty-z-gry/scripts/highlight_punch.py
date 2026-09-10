@@ -45,6 +45,7 @@ def main() -> int:
     p.add_argument("--saturation", type=float, default=1.25)
     p.add_argument("--out-width", type=int, default=1080)
     p.add_argument("--out-height", type=int, default=1920)
+    p.add_argument("--crf", type=int, default=23, help="jakość H.264 (niżej = lepsza jakość, większy plik)")
     args = p.parse_args()
 
     w, h = probe_wh(args.input)
@@ -75,7 +76,7 @@ def main() -> int:
         "ffmpeg", "-y", "-i", args.input,
         "-filter_complex", filter_complex,
         "-map", "[vout]", "-map", "[acat]",
-        "-c:v", "libx264", "-preset", "medium", "-crf", "18",
+        "-c:v", "libx264", "-preset", "medium", "-crf", str(args.crf),
         "-c:a", "aac", "-b:a", "192k",
         "-movflags", "+faststart",
         args.output,
