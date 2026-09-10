@@ -1,0 +1,13 @@
+{
+  "language": "pl",
+  "whisper_model_variant": "multilingual",
+  "whisper_model_note": "MUSI być wariant bez sufiksu .en (np. 'small' albo 'medium', nie 'small.en') - inaczej transkrypcja polskiego wyjdzie bełkotem.",
+  "word_level_timestamps": true,
+  "output_format": "ass",
+  "style": {
+    "font": "TODO - wybrać po pierwszym teście na oczy",
+    "position": "dolna 1/3 kadru",
+    "highlight_current_word": true
+  },
+  "status": "SZABLON - nieprzetestowany end-to-end w tej sesji (blokada sieci: pobranie wag Whispera zwraca 403 z proxy w sesji chmurowej)"
+}

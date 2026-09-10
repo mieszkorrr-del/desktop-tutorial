@@ -1,0 +1,10 @@
+{
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "loudness_lufs": -14,
+  "container": "mp4",
+  "video_codec_free_resolve": "H.264",
+  "video_codec_max_free_resolve": "H.265",
+  "notes": "UHD 3840x2160@60fps 8-bit to sufit darmowej edycji Resolve wg STACK-DARMOWY-v2.md; 1080x1920 dla TikToka jest daleko poniżej tego limitu."
+}

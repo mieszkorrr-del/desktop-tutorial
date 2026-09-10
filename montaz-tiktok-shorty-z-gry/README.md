@@ -3,18 +3,71 @@
 Projekt do zamiany surowych klipów z gry na gotowe, pionowe filmiki (9:16)
 pod TikToka, Instagram Reels i YouTube Shorts.
 
-Pełna analiza przejrzanych narzędzi z GitHuba (porównanie, licencje, wymagania,
-rekomendacje zależnie od gry/sprzętu) jest w
-[`docs/ANALIZA-NARZEDZI.md`](docs/ANALIZA-NARZEDZI.md).
+**Obowiązująca architektura: [`docs/STACK-DARMOWY-v2.md`](docs/STACK-DARMOWY-v2.md).**
+Starszy [`docs/BRIEF-MONTAZ-TIKTOK.md`](docs/BRIEF-MONTAZ-TIKTOK.md) zostaje jako
+kontekst historyczny — tam, gdzie dokumenty się różnią, wygrywa v2. Skrót zmiany:
+NIE budujemy wszystkiego w Pythonie/ffmpeg. `auto-editor` wykrywa cięcia, timeline
+układa się w DaVinci Resolve (darmowa edycja, bez znaku wodnego) sterowanym przez
+MCP, render wychodzi czysty z Resolve.
+
+Pełna analiza przejrzanych narzędzi z GitHuba (porównanie, licencje, wymagania)
+jest w [`docs/ANALIZA-NARZEDZI.md`](docs/ANALIZA-NARZEDZI.md). Lista świadomie
+odrzuconych opcji z powodami: [`docs/ODRZUCONE.md`](docs/ODRZUCONE.md).
+
+## ⚠️ Ta sesja (chmura, headless) vs. sesja lokalna (Windows + GPU)
+
+Ten projekt jest rozwijany w dwóch różnych środowiskach Claude Code jednocześnie:
+
+- **Sesja chmurowa** (w której powstał ten plik) — Linux, brak GPU, brak DaVinci
+  Resolve. Może: strukturę repo, `auto-editor` (wykrywanie cięć, działa na CPU),
+  dokumentację, szkielety skryptów.
+- **Sesja lokalna** (Windows, GPU) — jedyne miejsce, gdzie da się zrobić most do
+  DaVinci Resolve (MCP), test `unofficial-davinci-mcp` (beat grid, EBU R128) i
+  `BeatSync-Engine`. Te trzy elementy **strukturalnie nie działają w sesji
+  chmurowej** — to nie brak czasu, tylko brak GUI Resolve i GPU w kontenerze.
+
+Nie mieszaj poleceń między sesjami — komendy z `nvidia-smi`, `findstr`, ścieżkami
+`C:\...` czy odwołaniami do zainstalowanego Resolve są dla sesji lokalnej.
 
 ## Struktura
 
 ```
 montaz-tiktok-shorty-z-gry/
-├── input/    -> tu trafiają surowe klipy do zmontowania
-├── output/   -> tu trafiają gotowe montaże
-├── scripts/  -> własny pipeline FFmpeg + Whisper (patrz niżej)
-└── docs/     -> analiza porównawcza narzędzi z GitHuba
+├── input/                    # tu wrzucam surowe klipy
+├── work/                     # pośrednie, kasowalne (np. klipy testowe)
+├── output/                   # gotowe shorty
+├── music/                    # podkłady do beat-sync
+├── presets/
+│   ├── tiktok-9x16.json      # 1080x1920, -14 LUFS
+│   └── napisy-pl.json        # font, model Whisper, pozycja napisów
+├── scripts/
+│   ├── to_vertical.py        # ✅ działa (fallback bez Resolve)
+│   ├── trim_silence.py       # ✅ działa (fallback bez Resolve)
+│   ├── auto_captions.py      # ⚠️ napisany, zablokowany siecią w tej sesji
+│   ├── highlight_punch.py    # ✅ działa (zoom+slowmo na wskazanym momencie)
+│   └── montaz.py             # ⚠️ szkielet orkiestratora, kroki Resolve = zaślepki
+└── docs/
+    ├── ANALIZA-NARZEDZI.md      # ✅ analiza ogólna (research pierwotny)
+    ├── BRIEF-MONTAZ-TIKTOK.md   # starszy brief (kontekst historyczny)
+    ├── STACK-DARMOWY-v2.md      # ✅ OBOWIĄZUJĄCA architektura
+    ├── TESTY-AUTO-EDITOR.md     # ✅ zmierzone wyniki 3 wariantów --edit
+    ├── WERYFIKACJA-MCP.md       # ⬜ szablon — wypełnić w sesji lokalnej
+    └── ODRZUCONE.md             # log odrzuconych narzędzi z powodami
+```
+
+## auto-editor (rdzeń wykrywania cięć, zgodnie z v2)
+
+Zainstalowany i przetestowany w tej sesji: `pip install auto-editor` (29.3.1) +
+`npx skills add WyattBlue/auto-editor` (4 skille w `.claude/skills/`). Pełne wyniki
+testu trzech wariantów `--edit` na syntetycznym klipie: [`docs/TESTY-AUTO-EDITOR.md`](docs/TESTY-AUTO-EDITOR.md).
+
+Skrót: wariant łączony `--edit "(or audio:0.03 motion:0.06)"` jako jedyny poprawnie
+złapał zarówno ciche-ale-ruchome, jak i głośne-ale-statyczne fragmenty — ustawiony
+jako domyślny w `scripts/montaz.py`.
+
+```bash
+auto-editor klip.mp4 --edit "(or audio:0.03 motion:0.06)" --preview   # tylko statystyki
+auto-editor klip.mp4 --edit "(or audio:0.03 motion:0.06)" --export resolve  # most do Resolve
 ```
 
 ## Własny pipeline (`scripts/`)
@@ -74,8 +127,10 @@ są warianty, nie jedna sztywna rekomendacja:
    CoD, Overwatch, Minecraft, R6 Siege, Destiny 2, PUBG, Rocket League).
    Ma gotowy instalator, sam wykrywa killi/eliminacje (YOLOv8).
 2. **[autoshorts](https://github.com/divyaprakash0426/autoshorts)** — jeśli
-   grasz w cokolwiek innego i masz kartę Nvidia 6GB+ VRAM — wykrywa "epickie
-   momenty" uniwersalnie przez AI (OpenAI/Gemini), dorzuca lektora TTS.
+   grasz w cokolwiek innego. ⚠️ **Nieaktualne założenie:** ten punkt zakładał
+   kartę Nvidia. Potwierdzone GPU to **AMD Radeon RX 9070 XT** — `autoshorts`
+   wymaga CUDA/Nvidia wprost w swoim README, więc **prawdopodobnie nie zadziała**
+   bez sprawdzenia wsparcia ROCm, którego nie weryfikowałem. Nie polecam bez testu.
 3. **[short-video-maker](https://github.com/gyoridavid/short-video-maker)** /
    **[openshorts](https://github.com/mutonby/openshorts)** — jeśli docelowo
    chcesz postawić trwały serwis (Docker) do masowej produkcji shortów, nie

@@ -2,3 +2,7 @@ input/*
 !input/.gitkeep
 output/*
 !output/.gitkeep
+work/*
+!work/.gitkeep
+music/*
+!music/.gitkeep
