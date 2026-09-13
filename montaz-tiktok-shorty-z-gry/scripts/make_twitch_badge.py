@@ -17,7 +17,7 @@ def build_badge(nick: str, scale: int = 4) -> Image.Image:
     h = 90 * scale
     icon_size = h
     pad = 14 * scale
-    font = ImageFont.truetype(FONT_PATH, 34 * scale)
+    font = ImageFont.truetype(FONT_PATH, 42 * scale)
 
     tmp = Image.new("RGBA", (10, 10))
     draw = ImageDraw.Draw(tmp)
@@ -31,16 +31,18 @@ def build_badge(nick: str, scale: int = 4) -> Image.Image:
     radius = 18 * scale
     draw.rounded_rectangle([0, 0, width - 1, h - 1], radius=radius, fill=TWITCH_PURPLE)
 
-    icon_pad = 18 * scale
+    # Ikona: czarny zaokrąglony kwadrat z białym glifem Twitcha (dymek czatu
+    # z dwoma pionowymi paskami) w środku - odwzorowanie referencyjnej plakietki.
+    icon_pad = 16 * scale
     bx0, by0 = icon_pad, icon_pad
     bx1, by1 = icon_size - icon_pad, h - icon_pad - 6 * scale
-    draw.rounded_rectangle([bx0, by0, bx1, by1], radius=6 * scale, fill=(255, 255, 255, 255))
-    bar_w = 6 * scale
-    bar_h = (by1 - by0) * 0.5
-    bar_y0 = by0 + (by1 - by0) * 0.2
+    draw.rounded_rectangle([bx0, by0, bx1, by1], radius=8 * scale, fill=(0, 0, 0, 255))
+    bar_w = 5 * scale
+    bar_h = (by1 - by0) * 0.42
+    bar_y0 = by0 + (by1 - by0) * 0.29
     cx = (bx0 + bx1) / 2
-    draw.rectangle([cx - bar_w * 2, bar_y0, cx - bar_w, bar_y0 + bar_h], fill=TWITCH_PURPLE)
-    draw.rectangle([cx + bar_w, bar_y0, cx + bar_w * 2, bar_y0 + bar_h], fill=TWITCH_PURPLE)
+    draw.rectangle([cx - bar_w * 1.8, bar_y0, cx - bar_w * 0.6, bar_y0 + bar_h], fill=(255, 255, 255, 255))
+    draw.rectangle([cx + bar_w * 0.6, bar_y0, cx + bar_w * 1.8, bar_y0 + bar_h], fill=(255, 255, 255, 255))
 
     text_x = icon_size + pad
     text_y = (h - (text_bbox[3] - text_bbox[1])) / 2 - text_bbox[1]
