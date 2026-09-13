@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+data/state.json
+data/report.md
+data/logs/*.log
+data/logs/*.jsonl
