@@ -265,7 +265,7 @@ class PolymarketClient:
             data = resp.json()
             items = data.get("data", data) if isinstance(data, dict) else data
             if isinstance(items, list) and items:
-                return True, f"OK: received {len(items)} record(s) from {url}"
+                return True, f"received {len(items)} record(s) from {url}"
             return False, f"Reached {url} but got an unexpected/empty payload shape"
         except requests.RequestException as exc:
             return False, f"Could not reach {url}: {exc}"
