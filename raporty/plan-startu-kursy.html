@@ -1,0 +1,318 @@
+<title>Plan startu A i B</title>
+<meta name="description" content="Kursy, koszty i plan działania dla ścieżek: back office/KYC oraz Excel/Power BI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F5F6F3; --paper:#FFFFFF; --ink:#1D2321; --muted:#5B6560; --line:#DCE1DC;
+  --accent:#2F6B55; --accent-soft:#E3EFE9; --warn:#9A5B0B; --warn-soft:#FBF0DE;
+  --bad:#A33A2E; --bad-soft:#F8E4E0; --mid:#44607A; --mid-soft:#E4ECF3;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#141816; --paper:#1C211F; --ink:#E7ECE9; --muted:#9BA7A1; --line:#303833;
+    --accent:#7CC3A5; --accent-soft:#1F3129; --warn:#E3B062; --warn-soft:#3A2D19;
+    --bad:#EE8E80; --bad-soft:#3B211D; --mid:#9DBBD6; --mid-soft:#1E2A35;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141816; --paper:#1C211F; --ink:#E7ECE9; --muted:#9BA7A1; --line:#303833;
+  --accent:#7CC3A5; --accent-soft:#1F3129; --warn:#E3B062; --warn-soft:#3A2D19;
+  --bad:#EE8E80; --bad-soft:#3B211D; --mid:#9DBBD6; --mid-soft:#1E2A35;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:980px;margin:0 auto}
+.prose{max-width:68ch}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:700;letter-spacing:-.02em}
+h2{font-size:clamp(1.45rem,3.6vw,1.95rem);font-weight:700;margin-top:3rem;margin-bottom:.8rem}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:.55rem 0}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+header.top{padding-block:44px 6px;display:grid;gap:14px}
+.lede{font-size:1.12rem;color:var(--muted);max-width:62ch}
+.note{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);border-radius:10px;padding:14px 18px;margin-top:20px}
+.note strong{color:var(--warn)}
+.rule{background:var(--paper);border:1px solid var(--accent);box-shadow:0 0 0 1px var(--accent) inset;border-radius:14px;padding:20px 22px;margin-top:24px}
+.rule p{margin:.3rem 0}
+.budget{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px}
+.bcard{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:4px;align-content:start}
+.bcard b{font-family:var(--display);font-size:1.45rem;font-variant-numeric:tabular-nums}
+.bcard span{font-size:.93rem;color:var(--muted);line-height:1.4}
+.tbl{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;min-width:820px;font-size:.93rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;background:color-mix(in srgb,var(--bg) 60%,var(--paper))}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-family:var(--mono);font-size:.72rem;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.g{background:var(--accent-soft);color:var(--accent)}
+.w{background:var(--warn-soft);color:var(--warn)}
+.b{background:var(--bad-soft);color:var(--bad)}
+.m{background:var(--mid-soft);color:var(--mid)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:12px}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.box h3{margin-bottom:8px}
+.box ul{margin:0;padding-left:1.15rem;display:grid;gap:5px}
+.cv{display:grid;gap:8px;margin-top:12px}
+.cvrow{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.cvrow div{padding:10px 14px}
+.cvrow div:first-child{color:var(--muted);border-right:1px solid var(--line)}
+.cvrow div:last-child{font-weight:600}
+.cvhead{display:grid;grid-template-columns:1fr 1fr;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cvhead span{padding-inline:14px}
+@media (max-width:560px){.cvrow,.cvhead{grid-template-columns:1fr}.cvrow div:first-child{border-right:0;border-bottom:1px solid var(--line)}.cvhead span:last-child{display:none}}
+.plan{display:grid;gap:10px;margin-top:12px}
+.week{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:grid;gap:8px}
+.week .when{font-family:var(--mono);font-size:.78rem;color:var(--accent)}
+.task{display:flex;gap:10px;align-items:flex-start}
+.task input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:0 0 auto}
+.task label{cursor:pointer}
+.task input:checked + label{color:var(--muted);text-decoration:line-through}
+.progress{display:flex;align-items:center;gap:12px;margin-top:10px;font-family:var(--mono);font-size:.82rem;color:var(--muted)}
+.bar{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden;max-width:320px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+button.reset{font:inherit;font-size:.8rem;background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:4px 10px;cursor:pointer}
+code,.kw{font-family:var(--mono);font-size:.86em;background:var(--accent-soft);color:var(--ink);padding:1px 5px;border-radius:4px}
+.qa{display:grid;gap:8px;margin-top:10px}
+details{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 16px}
+summary{cursor:pointer;font-weight:600}
+.src{font-size:.88rem;color:var(--muted)}
+.src ol{padding-left:1.3rem;display:grid;gap:4px}
+.src a{word-break:break-word}
+.ref{font-family:var(--mono);font-size:.7rem;vertical-align:super;color:var(--muted);text-decoration:none}
+footer{margin-top:44px;font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Projekt · Nowy start zawodowy · część 2</div>
+  <h1>Plan startu: back office/KYC i Power BI</h1>
+  <p class="lede">Konkretne kursy z cenami, co z nich naprawdę jest potrzebne, jak przepisać CV z banku i plan na 12 tygodni do odhaczania.</p>
+</header>
+
+<div class="note prose"><p><strong>Skąd dane.</strong> Ceny i opisy kursów pochodzą z wyników wyszukiwania z 27.09.2026 i mogą się zmienić, często są to ceny promocyjne. Żadnego z tych kursów nie testowałem, a opinii nie mogłem niezależnie sprawdzić. Przed zakupem wejdź na stronę kursu i porównaj program z listą umiejętności poniżej.</p></div>
+
+<div class="rule prose">
+  <div class="eyebrow">Najważniejsza zasada</div>
+  <p><b>Na ścieżkę A nie trzeba płatnego kursu.</b> Bank w CV to dokładnie to, czego wymagają oferty juniorskie w KYC/AML: „min. rok doświadczenia w usługach finansowych lub bankowości” <a class="ref" href="#s1">[1]</a>. Każdy bank jako instytucja obowiązana musi szkolić pracowników z AML <a class="ref" href="#s2">[2]</a>, więc ona prawdopodobnie już ma takie szkolenie za sobą i trzeba je wpisać do CV. Pieniądze lepiej wydać na ścieżkę B i ewentualnie na angielski.</p>
+</div>
+
+<h2>Budżet w skrócie</h2>
+<div class="budget">
+  <div class="bcard"><b>0 zł</b><span>Ścieżka A: przygotowanie wiedzy KYC/AML z darmowych źródeł + CV</span></div>
+  <div class="bcard"><b>0–300 zł</b><span>Ścieżka B, online: Microsoft Learn (darmowy) + jeden tani kurs wideo po polsku</span></div>
+  <div class="bcard"><b>1 199–4 000 zł</b><span>Ścieżka B, stacjonarnie w Lublinie, z możliwym dofinansowaniem BUR/KFS</span></div>
+  <div class="bcard"><b>2 000+ zł</b><span>Certyfikaty AML dla specjalistów. Na etapie juniora nie są potrzebne</span></div>
+</div>
+
+<h2>Ścieżka A: back office i KYC/AML</h2>
+
+<h3 style="margin-top:1.2rem">Czego się nauczyć (darmowo) przed rozmowami</h3>
+<div class="cols">
+  <div class="box"><h3>Pojęcia, o które pytają</h3><ul>
+    <li><b>KYC</b>: poznaj swojego klienta, czyli identyfikacja i weryfikacja</li>
+    <li><b>CDD / EDD</b>: standardowe i wzmożone środki bezpieczeństwa finansowego</li>
+    <li><b>PEP</b>: osoba zajmująca eksponowane stanowisko polityczne</li>
+    <li><b>Beneficjent rzeczywisty</b> i rejestr <b>CRBR</b></li>
+    <li><b>Listy sankcyjne</b>, screening</li>
+    <li><b>Transakcja podejrzana</b>, zgłoszenie do GIIF</li>
+    <li><b>Ocena ryzyka klienta</b> (niskie, średnie, wysokie)</li>
+  </ul></div>
+  <div class="box"><h3>Darmowe źródła</h3><ul>
+    <li>Strona GIIF na gov.pl: szkolenia i komunikaty. Publiczny e-learning GIIF nie jest obecnie dostępny, ale GIIF organizuje bezpłatne szkolenia online dla instytucji obowiązanych <a class="ref" href="#s2">[2]</a></li>
+    <li>Tekst ustawy z 1 marca 2018 o przeciwdziałaniu praniu pieniędzy: czytać rozdziały o środkach bezpieczeństwa finansowego</li>
+    <li>Wewnętrzne szkolenie AML z obecnego banku: zapisać nazwę i rok do CV</li>
+    <li>Oferty „Junior KYC/AML” na karierawfinansach.pl: przeczytać 10 opisów i wypisać powtarzające się słowa <a class="ref" href="#s1">[1]</a></li>
+  </ul></div>
+</div>
+
+<h3 style="margin-top:1.6rem">Płatne kursy AML/KYC: przegląd</h3>
+<div class="tbl"><table>
+  <thead><tr><th>Kurs</th><th>Forma</th><th>Cena</th><th>Dla kogo</th><th>Ocena na teraz</th></tr></thead>
+  <tbody>
+    <tr><td>ICA Certificate in Anti Money Laundering (Level 2)</td><td>online, własne tempo, 2 mies. dostępu, egzamin 1 h</td><td class="num">ceny ICA „od £145” + opłata członkowska <a class="ref" href="#s3">[3]</a></td><td>poziom wprowadzający, uznawany w Europie, po angielsku</td><td><span class="pill w">opcjonalnie</span> jedyna rozsądna opcja, jeśli koniecznie certyfikat. Cenę sprawdzić przy zapisie</td></tr>
+    <tr><td>Szkolenie AML online z certyfikatem (System AML)</td><td>online</td><td class="num">690 zł netto, 3 osoby w cenie <a class="ref" href="#s4">[4]</a></td><td>głównie biura rachunkowe</td><td><span class="pill b">nie teraz</span> profil pod obowiązki firmy, nie pod szukanie pracy</td></tr>
+    <tr><td>Kurs AML i CFT (kik.edu.pl)</td><td>online, zaświadczenie MEiN</td><td class="num">sprawdzić na stronie <a class="ref" href="#s5">[5]</a></td><td>ogólny</td><td><span class="pill w">opcjonalnie</span></td></tr>
+    <tr><td>Certyfikowany KYC Officer (Langas)</td><td>online</td><td class="num">od 2 061 zł <a class="ref" href="#s4">[4]</a></td><td>kierownicy i specjaliści instytucji obowiązanych, prawnicy <a class="ref" href="#s6">[6]</a></td><td><span class="pill b">nie teraz</span> za drogi i za wysoki poziom na start</td></tr>
+    <tr><td>Certyfikowany analityk AML (Langas)</td><td>online</td><td class="num">2 370–2 570 zł + VAT <a class="ref" href="#s4">[4]</a></td><td>specjaliści</td><td><span class="pill b">nie teraz</span></td></tr>
+    <tr><td>CAMS (ACAMS)</td><td>egzamin międzynarodowy</td><td class="num">2 095–2 495 USD + 295 USD/rok <a class="ref" href="#s3">[3]</a></td><td>doświadczeni</td><td><span class="pill m">za 2–3 lata</span> gdy pracodawca zapłaci</td></tr>
+  </tbody>
+</table></div>
+
+<h3 style="margin-top:1.6rem">Jak przepisać bankowe doświadczenie na język KYC</h3>
+<p class="prose">Jedna pozycja w CV, dwie wersje. Lewa kolumna to typowy opis stanowiska w oddziale czy na infolinii, prawa to ta sama praca opisana pod ofertę back office/KYC. Wpisywać tylko to, co faktycznie robiła.</p>
+<div class="cv">
+  <div class="cvhead"><span>Było</span><span>Pod ofertę KYC / back office</span></div>
+  <div class="cvrow"><div>Obsługa klientów, zakładanie kont</div><div>Identyfikacja i weryfikacja tożsamości klientów zgodnie z procedurami KYC</div></div>
+  <div class="cvrow"><div>Sprawdzanie dokumentów przy wnioskach</div><div>Weryfikacja kompletności i poprawności dokumentacji kredytowej / rachunkowej</div></div>
+  <div class="cvrow"><div>Sprzedaż produktów bankowych</div><div>Analiza potrzeb i profilu klienta; znajomość produktów i procesów bankowych</div></div>
+  <div class="cvrow"><div>Szkolenia wewnętrzne</div><div>Szkolenie AML/CFT (nazwa, rok), szkolenie z ochrony danych, z przepisów MiFID/RODO (jeśli były)</div></div>
+  <div class="cvrow"><div>Reklamacje</div><div>Analiza i obsługa zgłoszeń wymagających wyjaśnienia; współpraca z działami centralnymi</div></div>
+  <div class="cvrow"><div>Praca w systemach banku</div><div>Praca w systemach bankowych (nazwać je, jeśli nazwa nie jest poufna), rejestracja i archiwizacja danych</div></div>
+</div>
+<p class="prose" style="margin-top:12px">Wyniki sprzedażowe w CV pod tę ścieżkę raczej osłabiają kandydaturę, bo sygnalizują profil sprzedażowy. Zostawić je w jednym zdaniu albo pominąć.</p>
+
+<h3 style="margin-top:1.6rem">Gdzie aplikować w pierwszej kolejności</h3>
+<div class="cols">
+  <div class="box"><h3>Rekrutacja wewnętrzna w obecnym banku</h3><p>Zwykle najłatwiejsze przejście, bo bank zna jej pracę. Sprawdzić wewnętrzny portal ogłoszeń: działy operacyjne, AML, weryfikacji, obsługi kredytów. To moja rekomendacja, a nie dane z rynku, ale kosztuje najmniej wysiłku.</p></div>
+  <div class="box"><h3>Lublin</h3><p>Działy back office i operacji w Genpact, Concentrix, Orange, Generali, bankach i SKOK-ach. Filtrować oferty tak, żeby nie wpadały „contact center” i „doradca”.</p></div>
+  <div class="box"><h3>Warszawa hybrydowo lub zdalnie</h3><p>Junior KYC/AML: banki, firmy audytorskie (np. EY), centra usług. Na karierawfinansach.pl jest osobna kategoria AML/KYC z filtrem miasta <a class="ref" href="#s1">[1]</a>.</p></div>
+</div>
+
+<h3 style="margin-top:1.6rem">Pytania, które warto przećwiczyć na głos</h3>
+<div class="qa prose">
+  <details><summary>Czym różni się CDD od EDD i kiedy stosuje się wzmożone środki?</summary><p>EDD stosuje się przy wyższym ryzyku, np. klient PEP, kraj wysokiego ryzyka, nietypowe transakcje. Trzeba umieć podać przykład z praktyki banku.</p></details>
+  <details><summary>Klient nie chce podać źródła pochodzenia środków. Co robisz?</summary><p>Pytanie o procedurę: nie przeprowadzać transakcji, udokumentować, eskalować zgodnie z procedurą, ewentualnie zgłosić. Liczy się spokojne trzymanie się procedury.</p></details>
+  <details><summary>Dlaczego odchodzisz ze sprzedaży?</summary><p>Mówić o tym, do czego się idzie, a nie od czego się ucieka: „najlepiej czuję się w pracy analitycznej, przy dokumentach i procedurach, i to było najmocniejsze w mojej dotychczasowej pracy”.</p></details>
+  <details><summary>Jak radzisz sobie z powtarzalną pracą?</summary><p>Uczciwie: dokładność, własne listy kontrolne, a przy okazji pokazanie Excela jako sposobu na usprawnienia. To łączy ścieżki A i B.</p></details>
+</div>
+
+<h2>Ścieżka B: Excel → Power Query → Power BI</h2>
+<p class="prose">Kolejność ma znaczenie: najpierw Excel (tabele przestawne, funkcje wyszukiwania), potem Power Query (czyszczenie i łączenie danych), dopiero potem Power BI. Power Query działa w Excelu i w Power BI tak samo, więc jest mostem między nimi.</p>
+
+<div class="tbl"><table>
+  <thead><tr><th>Kurs</th><th>Język / forma</th><th>Cena</th><th>Kiedy</th><th>Ocena</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://learn.microsoft.com/pl-pl/training/powerplatform/power-bi">Microsoft Learn: Power BI</a></td><td>PL, online, darmowy</td><td class="num">0 zł</td><td>od razu</td><td><span class="pill g">zacznij tu</span> oficjalny, ale mało ćwiczeń <a class="ref" href="#s7">[7]</a></td></tr>
+    <tr><td>KajoData: Power BI dla początkujących</td><td>PL, wideo, dostęp na rok</td><td class="num">269 zł (cena z okresu promocji) <a class="ref" href="#s8">[8]</a></td><td>po Microsoft Learn albo zamiast</td><td><span class="pill g">dobry stosunek ceny</span> KajoData ma też kurs Power Query i pakiet Excel + PQ + PBI (cenę sprawdzić)</td></tr>
+    <tr><td>SkuteczneRaporty.pl (POWER PRO / Power BI od podstaw)</td><td>PL, wideo, 40+ h</td><td class="num">sprawdzić na stronie <a class="ref" href="#s9">[9]</a></td><td>alternatywa dla KajoData</td><td><span class="pill w">porównać program i cenę</span></td></tr>
+    <tr><td>Adam Kopeć: DAX w Power BI (Videopoint)</td><td>PL, wideo, 37 h</td><td class="num">229 zł, często z rabatem (widziano 171,74 zł) <a class="ref" href="#s10">[10]</a></td><td>drugi etap, po podstawach</td><td><span class="pill m">później</span></td></tr>
+    <tr><td>DataCamp: Introduction to Power BI</td><td>EN, interaktywny</td><td class="num">subskrypcja</td><td>jeśli angielski jest dobry</td><td><span class="pill w">opcjonalnie</span> wysokie oceny według DataCamp <a class="ref" href="#s7">[7]</a></td></tr>
+    <tr><td>Ośrodek Kursor, Lublin (Excel podst./średni, Power BI)</td><td>PL, stacjonarnie</td><td class="num">1 199–4 000 zł (40–80 h), możliwe BUR/KFS <a class="ref" href="#s11">[11]</a></td><td>jeśli potrzebna dyscyplina grupy lub dofinansowanie</td><td><span class="pill w">jeśli z dofinansowaniem</span></td></tr>
+    <tr><td>LabMasters: Analityka biznesowa w Power BI</td><td>PL, online na żywo</td><td class="num">sprawdzić na stronie <a class="ref" href="#s7">[7]</a></td><td>alternatywa na żywo</td><td><span class="pill w">porównać</span></td></tr>
+  </tbody>
+</table></div>
+
+<div class="cols" style="margin-top:16px">
+  <div class="box"><h3>Certyfikat PL-300</h3><p>Microsoft Power BI Data Analyst. Egzamin kosztuje 165 USD w USA, a cena w Polsce zależy od regionu <a class="ref" href="#s12">[12]</a>. Bywają vouchery -50%. Pomaga, ale portfolio i doświadczenie liczą się bardziej. Rozważyć po 3–6 miesiącach nauki.</p></div>
+  <div class="box"><h3>Minimum umiejętności przed aplikowaniem</h3><ul>
+    <li>Excel: tabele przestawne, <code>X.WYSZUKAJ</code>, <code>JEŻELI</code>, formatowanie warunkowe</li>
+    <li>Power Query: import, czyszczenie, scalanie tabel, odświeżanie</li>
+    <li>Power BI: model danych, 3–4 wykresy, fragmentatory, proste miary DAX (<code>SUM</code>, <code>CALCULATE</code>)</li>
+    <li>Umiejętność opowiedzenia, co wynika z raportu</li>
+  </ul></div>
+</div>
+
+<h3 style="margin-top:1.6rem">Portfolio: 3 projekty, które mają sens właśnie dla niej</h3>
+<p class="prose">Rekruterzy oceniają nie wygląd dashboardu, tylko to, czy kandydat zaczyna od pytania, zna źródło danych i potrafi podać wniosek. Wystarczy jedna hipoteza, jeden wykres i jeden wniosek <a class="ref" href="#s13">[13]</a>. Każdy projekt opisać w trzech zdaniach: pytanie, dane, wniosek.</p>
+<div class="cols">
+  <div class="box"><h3>Wynagrodzenia w Lublinie a w Polsce</h3><p>Dane GUS (Bank Danych Lokalnych). Pytanie: w których branżach różnica jest największa? Łączy się z tym, co właśnie analizujemy.</p></div>
+  <div class="box"><h3>Rynek pracy z własnych notatek</h3><p>Arkusz ze 30–50 ofertami, które i tak przegląda: stanowisko, widełki, tryb, telefon tak/nie. Pytanie: które hasła dają najlepsze oferty bez telefonu? Projekt do portfolio i narzędzie do szukania pracy jednocześnie.</p></div>
+  <div class="box"><h3>Symulacja procesu back office</h3><p>Fikcyjne dane wniosków (czas obsługi, błędy, zwroty). Raport SLA i jakości, dokładnie taki, jaki robi się w dziale operacji. Najlepiej pokazuje połączenie ścieżek A i B.</p></div>
+</div>
+
+<h2>Plan na 12 tygodni</h2>
+<p class="prose">Około 5–7 godzin tygodniowo obok pracy. Odhaczone pola zapamiętują się w tej przeglądarce.</p>
+<div class="progress"><div class="bar"><i id="barFill"></i></div><span id="progressText">0 / 0</span><button class="reset" id="resetBtn" type="button">Wyczyść</button></div>
+<div class="plan" id="plan">
+  <div class="week"><div class="when">Tydzień 1</div>
+    <div class="task"><input type="checkbox" id="t1"><label for="t1">Wypisać wszystkie szkolenia wewnętrzne z banku (AML, RODO, produktowe) z latami</label></div>
+    <div class="task"><input type="checkbox" id="t2"><label for="t2">Przepisać CV na wersję „operacje i procedury” według tabeli wyżej</label></div>
+    <div class="task"><input type="checkbox" id="t3"><label for="t3">Zaktualizować LinkedIn: nagłówek pod back office/KYC, „Open to work” widoczne tylko dla rekruterów</label></div>
+    <div class="task"><input type="checkbox" id="t4"><label for="t4">Założyć arkusz do śledzenia ofert (to jednocześnie projekt portfolio nr 2)</label></div>
+  </div>
+  <div class="week"><div class="when">Tydzień 2</div>
+    <div class="task"><input type="checkbox" id="t5"><label for="t5">Sprawdzić wewnętrzne ogłoszenia w obecnym banku</label></div>
+    <div class="task"><input type="checkbox" id="t6"><label for="t6">Wysłać pierwsze 10 aplikacji: back office i KYC, Lublin + Warszawa hybrydowo</label></div>
+    <div class="task"><input type="checkbox" id="t7"><label for="t7">Przerobić słowniczek KYC/AML (CDD, EDD, PEP, beneficjent rzeczywisty, sankcje)</label></div>
+    <div class="task"><input type="checkbox" id="t8"><label for="t8">Start Microsoft Learn: moduły Power BI (darmowe)</label></div>
+  </div>
+  <div class="week"><div class="when">Tydzień 3–4</div>
+    <div class="task"><input type="checkbox" id="t9"><label for="t9">Kolejne 10–15 aplikacji; każda z CV dopasowanym do słów z ogłoszenia</label></div>
+    <div class="task"><input type="checkbox" id="t10"><label for="t10">Przećwiczyć na głos 4 pytania rekrutacyjne z tej strony</label></div>
+    <div class="task"><input type="checkbox" id="t11"><label for="t11">Sprawdzić dofinansowanie: BUR (Lubelska Fundacja Rozwoju) i MUP Lublin</label></div>
+    <div class="task"><input type="checkbox" id="t12"><label for="t12">Decyzja: kurs online (KajoData lub SkuteczneRaporty) czy stacjonarny w Lublinie</label></div>
+  </div>
+  <div class="week"><div class="when">Tydzień 5–8</div>
+    <div class="task"><input type="checkbox" id="t13"><label for="t13">Excel: tabele przestawne, X.WYSZUKAJ, Power Query w Excelu</label></div>
+    <div class="task"><input type="checkbox" id="t14"><label for="t14">Projekt portfolio nr 2: raport z własnego arkusza ofert</label></div>
+    <div class="task"><input type="checkbox" id="t15"><label for="t15">Na każdej rozmowie zapytać o % czasu przy telefonie i o cele sprzedażowe</label></div>
+  </div>
+  <div class="week"><div class="when">Tydzień 9–12</div>
+    <div class="task"><input type="checkbox" id="t16"><label for="t16">Power BI: model danych, wykresy, proste miary DAX</label></div>
+    <div class="task"><input type="checkbox" id="t17"><label for="t17">Projekt portfolio nr 1 (GUS Lublin) lub nr 3 (symulacja back office)</label></div>
+    <div class="task"><input type="checkbox" id="t18"><label for="t18">Dodać projekty do LinkedIn z opisem: pytanie, dane, wniosek</label></div>
+    <div class="task"><input type="checkbox" id="t19"><label for="t19">Podsumowanie: ile aplikacji, ile rozmów, które hasła działały. Na tej podstawie korekta planu</label></div>
+  </div>
+</div>
+
+<h2>Jak zwiększyć szanse: zasady</h2>
+<div class="cols">
+  <div class="box"><h3>Aplikacje</h3><ul>
+    <li>CV dopasowane do słów z ogłoszenia. Wiele firm wstępnie filtruje CV automatycznie (to częsta praktyka, nie mam twardych danych dla Polski)</li>
+    <li>Regularnie, np. 10 aplikacji tygodniowo, zamiast 50 jednego dnia</li>
+    <li>Oferty zdalne mają kilkukrotnie więcej kandydatów, więc stacjonarne i hybrydowe w Lublinie traktować jako szansę, a nie gorszą opcję</li>
+  </ul></div>
+  <div class="box"><h3>Rozmowy</h3><ul>
+    <li>Opowiadać o konkretnych sytuacjach z banku: dokument się nie zgadzał, co zrobiła</li>
+    <li>Pokazać Excela i pierwszy projekt, nawet mały</li>
+    <li>Pytać o telefon i targety wprost. To nie jest niegrzeczne, tylko profesjonalne</li>
+  </ul></div>
+  <div class="box"><h3>Czego unikać</h3><ul>
+    <li>Kupowania drogich certyfikatów „na zapas” przed pierwszą rozmową</li>
+    <li>Kursów obiecujących „pracę w IT w 3 miesiące” za kilka tysięcy</li>
+    <li>Rezygnowania z obecnej pracy przed podpisaniem nowej umowy</li>
+  </ul></div>
+</div>
+
+<section class="src">
+  <h2>Źródła</h2>
+  <ol>
+    <li id="s1"><a href="https://www.karierawfinansach.pl/artykul/wiadomosci/specjalisci-kyc-poszukiwani-societe-generale-tworzy-nowy-zespol">karierawfinansach.pl: KYC/AML i rekrutacja</a>; <a href="https://www.karierawfinansach.pl/praca/aml-kyc">oferty AML/KYC</a></li>
+    <li id="s2"><a href="https://www.gov.pl/web/finanse/szkolenia-organizowane-przez-giif">gov.pl: Szkolenia organizowane przez GIIF</a>; <a href="https://mf-arch2.mf.gov.pl/web/bip/ministerstwo-finansow/dzialalnosc/giif/komunikaty/-/asset_publisher/8KnM/content/id/5982174">komunikat GIIF o kursie e-learningowym</a></li>
+    <li id="s3"><a href="https://www.int-comp.org/courses/ica-certificate-in-anti-money-laundering/">ICA Certificate in Anti Money Laundering</a>; <a href="https://www.azakaw.com/blog/best-aml-certifications">azakaw: porównanie certyfikatów AML 2026</a></li>
+    <li id="s4"><a href="https://systemaml.pl/produkty/szkolenie-aml/">System AML: szkolenie online</a>; <a href="https://langas.pl/szkolenie/certyfikowany-analityk-aml/">Langas: Certyfikowany analityk AML</a>; <a href="https://eventis.pl/szkolenia-kursy/kyc-aml-cft">eventis.pl: szkolenia KYC/AML</a></li>
+    <li id="s5"><a href="https://kik.edu.pl/kursy/179">kik.edu.pl: Kurs AML i CFT</a></li>
+    <li id="s6"><a href="https://langas.pl/szkolenie/certyfikowany-kyc-officer-4/">Langas: Certyfikowany KYC Officer</a></li>
+    <li id="s7"><a href="https://www.datacamp.com/pl/blog/all-the-best-power-bi-courses">DataCamp: najlepsze kursy Power BI 2026</a>; <a href="https://labmasters.pl/kursy-otwarte/bi/analityka-biznesowa-w-power-bi/">LabMasters</a></li>
+    <li id="s8"><a href="https://kajodata.com/kursy/kurs-powerbi-dla-poczatkujacych/">KajoData: Power BI dla początkujących</a>; <a href="https://kajodata.com/kursy/kurs-excel-power-bi-power-query/">pakiet Excel + PQ + PBI</a></li>
+    <li id="s9"><a href="https://skuteczneraporty.pl/kurs-power/">SkuteczneRaporty.pl: Kurs Power BI od podstaw</a></li>
+    <li id="s10"><a href="https://videopoint.pl/kurs/dax-w-power-bi-kurs-video-od-podstaw-po-analize-biznesowa-adam-kopec,vjedax.htm">Videopoint: DAX w Power BI (Adam Kopeć)</a></li>
+    <li id="s11"><a href="https://www.kursor.edu.pl/szkolenia/lublin/">Ośrodek Szkoleniowy Kursor, Lublin</a></li>
+    <li id="s12"><a href="https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/pl-300">Microsoft Learn: przewodnik PL-300</a>; <a href="https://learn.microsoft.com/en-us/answers/questions/5685013/what-is-the-price-of-the-certificate-of-exam-pl-30">Microsoft Q&amp;A: cena PL-300</a></li>
+    <li id="s13"><a href="https://kajodata.com/analityk-danych/jak-zrobic-projekt-do-portfolio-analiza-danych/">KajoData: projekt do portfolio</a>; <a href="https://expose.pl/jak-przygotowac-portfolio-projektow-power-bi/">Expose.pl: portfolio Power BI</a></li>
+  </ol>
+</section>
+
+<footer>Część 2 projektu „Nowy start zawodowy”, 27.09.2026. Część 1 to analiza rynku pracy Lublin i Warszawa.</footer>
+</div>
+
+<script>
+(function(){
+  var KEY='plan-startu-v1';
+  var boxes=[].slice.call(document.querySelectorAll('#plan input[type=checkbox]'));
+  var state={};
+  try{state=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){state={};}
+  function render(){
+    var done=boxes.filter(function(b){return b.checked;}).length;
+    document.getElementById('progressText').textContent=done+' / '+boxes.length;
+    document.getElementById('barFill').style.width=(boxes.length?done/boxes.length*100:0)+'%';
+  }
+  boxes.forEach(function(b){
+    if(state[b.id]) b.checked=true;
+    b.addEventListener('change',function(){
+      state[b.id]=b.checked;
+      try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+      render();
+    });
+  });
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    boxes.forEach(function(b){b.checked=false;});
+    state={};
+    try{localStorage.removeItem(KEY);}catch(e){}
+    render();
+  });
+  render();
+})();
+</script>
