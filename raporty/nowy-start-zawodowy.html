@@ -1,0 +1,306 @@
+<title>Nowy start zawodowy</title>
+<meta name="description" content="Analiza rynku pracy Lublin + Warszawa (wrzesień 2026) dla zmiany ścieżki zawodowej z banku.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F5F6F3; --paper:#FFFFFF; --ink:#1D2321; --muted:#5B6560; --line:#DCE1DC;
+  --accent:#2F6B55; --accent-soft:#E3EFE9; --warn:#9A5B0B; --warn-soft:#FBF0DE;
+  --bad:#A33A2E; --bad-soft:#F8E4E0; --good:#2F6B55; --good-soft:#E3EFE9;
+  --mid:#44607A; --mid-soft:#E4ECF3;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#141816; --paper:#1C211F; --ink:#E7ECE9; --muted:#9BA7A1; --line:#303833;
+    --accent:#7CC3A5; --accent-soft:#1F3129; --warn:#E3B062; --warn-soft:#3A2D19;
+    --bad:#EE8E80; --bad-soft:#3B211D; --good:#7CC3A5; --good-soft:#1F3129;
+    --mid:#9DBBD6; --mid-soft:#1E2A35;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141816; --paper:#1C211F; --ink:#E7ECE9; --muted:#9BA7A1; --line:#303833;
+  --accent:#7CC3A5; --accent-soft:#1F3129; --warn:#E3B062; --warn-soft:#3A2D19;
+  --bad:#EE8E80; --bad-soft:#3B211D; --good:#7CC3A5; --good-soft:#1F3129;
+  --mid:#9DBBD6; --mid-soft:#1E2A35;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:980px;margin:0 auto}
+.prose{max-width:68ch}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.1rem,6vw,3.4rem);font-weight:700;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.6vw,2rem);font-weight:700;margin-top:3.2rem;margin-bottom:.9rem}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:.6rem 0}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+header{padding-block:44px 8px;display:grid;gap:14px}
+.lede{font-size:1.15rem;color:var(--muted);max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.note{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);border-radius:10px;padding:14px 18px;margin-top:22px}
+.note strong{color:var(--warn)}
+.verdict{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-top:28px;display:grid;gap:14px}
+.verdict ol{margin:0;padding-left:1.3rem;display:grid;gap:10px}
+.verdict li::marker{font-family:var(--mono);color:var(--accent);font-weight:500}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:10px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:4px;align-content:start}
+.stat b{font-family:var(--display);font-size:1.55rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.92rem;color:var(--muted);line-height:1.4}
+.stat small{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.tbl{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;min-width:860px;font-size:.93rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;background:color-mix(in srgb,var(--bg) 60%,var(--paper))}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-family:var(--mono);font-size:.72rem;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.g{background:var(--good-soft);color:var(--good)}
+.w{background:var(--warn-soft);color:var(--warn)}
+.b{background:var(--bad-soft);color:var(--bad)}
+.m{background:var(--mid-soft);color:var(--mid)}
+.paths{display:grid;gap:16px;margin-top:14px}
+.path{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px 24px;display:grid;gap:10px}
+.path.main{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.path header{padding:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.path .tag{font-family:var(--mono);font-size:.75rem;color:var(--accent)}
+.kv{display:grid;grid-template-columns:minmax(120px,170px) 1fr;gap:6px 16px;font-size:.95rem}
+.kv dt{font-family:var(--mono);font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding-top:3px}
+.kv dd{margin:0}
+@media (max-width:560px){.kv{grid-template-columns:1fr}.kv dt{padding-top:8px}}
+.timeline{display:grid;gap:0;margin-top:12px;border-left:2px solid var(--line);padding-left:20px}
+.step{position:relative;padding-block:0 18px}
+.step::before{content:"";position:absolute;left:-27px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--accent)}
+.step .when{font-family:var(--mono);font-size:.78rem;color:var(--accent)}
+.flags{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+.flag{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.flag h3{font-size:1rem;margin-bottom:6px}
+.flag ul{margin:0;padding-left:1.1rem}
+code,.kw{font-family:var(--mono);font-size:.86em;background:var(--accent-soft);color:var(--ink);padding:1px 5px;border-radius:4px}
+details{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:10px}
+summary{cursor:pointer;font-weight:600}
+.src{font-size:.88rem;color:var(--muted)}
+.src ol{padding-left:1.3rem;display:grid;gap:4px}
+.src a{word-break:break-word}
+.ref{font-family:var(--mono);font-size:.7rem;vertical-align:super;color:var(--muted);text-decoration:none}
+footer{margin-top:48px;font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Projekt · Nowy start zawodowy</div>
+  <h1>Rynek pracy po banku: Lublin i Warszawa</h1>
+  <p class="lede">Konfrontacja listy od ChatGPT z tym, co naprawdę jest dziś w ogłoszeniach: ile ofert, ile płacą, jak trudno wejść, co grozi ze strony AI i co konkretnie robić po kursie.</p>
+  <div class="meta"><span>Stan: 27.09.2026</span><span>Miasta: Lublin · Warszawa · zdalnie</span><span>Punkt wyjścia: doświadczenie w banku, ucieczka od telefonu, sprzedaży i targetów</span></div>
+</header>
+
+<div class="note prose">
+  <p><strong>Jak powstała ta analiza i czego w niej nie ma.</strong> Środowisko, w którym pracowałem, ma zablokowany dostęp do portali pracy (pracuj.pl, OLX, Indeed, justjoin.it, nofluffjobs, rocketjobs). Nie mogłem więc sam przejrzeć i policzyć wszystkich ogłoszeń. Dane pochodzą z wyszukiwarki internetowej: fragmentów konkretnych ogłoszeń, raportów płacowych (Just Join IT, Grant Thornton, ABSL, GUS, wynagrodzenia.pl) i artykułów branżowych. Każda liczba ma podane źródło. Liczby „X tysięcy ofert” z agregatorów typu Jooble czy Jobsora pominąłem, bo liczą cały swój indeks, a nie realne oferty w danym zawodzie. Na końcu jest lista gotowych wyszukiwań do ręcznej weryfikacji (15 minut z telefonem).</p>
+</div>
+
+<section class="verdict">
+  <div class="eyebrow">Wniosek w skrócie</div>
+  <h3>Najlepszy układ to jedna szybka zmiana teraz i jedna umiejętność, która podnosi wartość na każdej ścieżce.</h3>
+  <ol>
+    <li><b>Teraz, bez kursu:</b> back office i operacje w bankach, centrach usług (SSC/BPO) i fintechach, z naciskiem na procesy <b>KYC/AML i weryfikację</b>. Doświadczenie z banku jest tu realnym atutem, a nie czymś do wyrzucenia.</li>
+    <li><b>Kurs, który ma największy sens:</b> Excel → Power Query → Power BI. Otwiera drogę do ról „specjalista ds. raportowania / jakości danych / analityk operacyjny” i jest przydatny w każdym kierunku z listy.</li>
+    <li><b>Eksperyment na 2–4 tygodnie przed płatnym kursem:</b> tester manualny (QA), celowany w aplikacje bankowe. Popyt na juniorów jest mały, ale bankowa wiedza domenowa to przewaga.</li>
+    <li><b>Nie jako główny plan:</b> copywriting i content (rynek zleceń skurczył się o połowę przez AI), UX research/writing (prawie brak ofert dla juniorów). Pisanie, humor i muzyka zostają jako projekty własne i portfolio.</li>
+  </ol>
+</section>
+
+<h2>Tło rynku we wrześniu 2026</h2>
+<div class="stats">
+  <div class="stat"><b>257 046</b><span>nowych ofert w Polsce w sierpniu 2026 (+4% r/r) na 50 największych portalach</span><small>Grant Thornton <a class="ref" href="#s1">[1]</a></small></div>
+  <div class="stat"><b>40 266</b><span>ofert w Warszawie w sierpniu, ok. 16% wszystkich w kraju</span><small>Grant Thornton <a class="ref" href="#s1">[1]</a></small></div>
+  <div class="stat"><b>~10 400</b><span>osób pracuje w centrach usług biznesowych w Lublinie, ponad połowa to IT</span><small>ABSL 2025 <a class="ref" href="#s2">[2]</a></small></div>
+  <div class="stat"><b>4 806 zł</b><span>płaca minimalna brutto w 2026 (ok. 3 605 zł netto). Punkt odniesienia dla ofert</span><small>Rozporządzenie RM <a class="ref" href="#s3">[3]</a></small></div>
+  <div class="stat"><b>8 274 zł</b><span>przeciętne wynagrodzenie brutto w sektorze przedsiębiorstw w Lublinie (województwo: 7 601 zł)</span><small>US Lublin, okres nieprecyzyjny <a class="ref" href="#s4">[4]</a></small></div>
+  <div class="stat"><b>10 017 zł</b><span>mediana wynagrodzeń brutto w Warszawie, marzec 2026</span><small>GUS przez wynagrodzenia.pl <a class="ref" href="#s5">[5]</a></small></div>
+</div>
+<div class="prose">
+  <p>Trzy rzeczy z tła, które zmieniają decyzję:</p>
+  <p><b>AI uderza w proste zadania tekstowe i wprowadzanie danych.</b> Zlecenia dla copywriterów na platformie Freelancehunt spadły w pierwszych pięciu miesiącach 2026 o 51,3% r/r (sam copywriting o 59%) <a class="ref" href="#s6">[6]</a>. Polski Instytut Ekonomiczny wymienia pracowników administracyjnych, operatorów wprowadzania danych i część analityki jako zawody najbardziej narażone na automatyzację <a class="ref" href="#s7">[7]</a>. Wniosek: w back office trzeba celować w role z oceną, decyzją i wyjątkami (weryfikacja, KYC, jakość), a nie w czyste przepisywanie danych.</p>
+  <p><b>Wejście do IT jako junior jest trudne.</b> Oferty dla juniorów to tylko 4,79% ogłoszeń IT; rekruterzy mówią, że często potrzeba ponad 100 aplikacji na kilka rozmów <a class="ref" href="#s8">[8]</a>.</p>
+  <p><b>Praca zdalna się kurczy, hybryda rośnie.</b> Ok. 31,5% ofert zdalnych i 35% hybrydowych (dane No Fluff Jobs, więc z przewagą IT) <a class="ref" href="#s9">[9]</a>. Na oferty zdalne aplikuje ok. 4,5 raza więcej osób niż na stacjonarne <a class="ref" href="#s10">[10]</a>, więc konkurencja o nie jest największa. Oferta w Lublinie stacjonarna lub hybrydowa to często łatwiejsza droga niż „100% zdalnie z Warszawy”.</p>
+</div>
+
+<h2>Lublin i Warszawa: gdzie czego szukać</h2>
+<div class="prose">
+  <p><b>Założenie:</b> mieszkacie w Lublinie lub okolicy. Wtedy Warszawa ma sens tylko jako praca zdalna lub hybryda z rzadkimi przyjazdami. Codzienne dojazdy nie wchodzą w grę.</p>
+  <p><b>Lublin:</b> mniejszy rynek, ale z konkretnymi pracodawcami back office. Działają tu m.in. Genpact (finanse i księgowość), Concentrix, Orange (centrum operacyjne i księgowe), PKO BP, Generali, RTV Euro AGD, Capgemini, Sii, Asseco, Comarch, Transition Technologies <a class="ref" href="#s11">[11]</a>. Uwaga: część z tych miejsc to przede wszystkim contact center, na przykład zespół PKO BP w Lublinie opisywany jest jako Contact Center <a class="ref" href="#s12">[12]</a>. Szukać trzeba działów back office, a nie „obsługi klienta”.</p>
+  <p><b>Warszawa:</b> najwięcej ofert KYC/AML, e-commerce, analityki i researchu. Na Indeed w Warszawie widnieje ponad 200 ofert dla hasła „KYC analyst” (wrzesień 2026) <a class="ref" href="#s13">[13]</a>, a EY rekrutuje Junior AML Analyst <a class="ref" href="#s14">[14]</a>. Wiele z tych ról to hybryda 2–3 dni w biurze, więc trzeba to sprawdzić przy każdej ofercie.</p>
+</div>
+
+<h3 style="margin-top:1.6rem">Konkretne oferty znalezione w 2026 (przykłady, nie pełna lista)</h3>
+<div class="tbl"><table>
+  <thead><tr><th>Stanowisko</th><th>Firma</th><th>Miejsce</th><th>Stawka</th><th>Co mówi o rynku</th></tr></thead>
+  <tbody>
+    <tr><td>AI Content Moderator (backoffice)</td><td>Concentrix</td><td>Lublin / zdalnie</td><td class="num">36,36 zł/h brutto, zlecenie</td><td>Wejście bez kursu. Wymaga polskiego C2 i angielskiego B1; mile widziane doświadczenie back office <a class="ref" href="#s15">[15]</a></td></tr>
+    <tr><td>Back office, wprowadzanie danych z niemieckim</td><td>ASTA Work (agencja)</td><td>Lublin / zdalnie</td><td class="num">6 500–7 500 zł brutto</td><td>Język obcy podnosi stawkę back office o ok. 1–2 tys. zł <a class="ref" href="#s16">[16]</a></td></tr>
+    <tr><td>Tester manualny</td><td>ITFS</td><td>Lublin, hybryda 2 dni</td><td class="num">60–75 zł/h netto, B2B</td><td>Testy m.in. bankowości internetowej; B2B oznacza samozatrudnienie <a class="ref" href="#s17">[17]</a></td></tr>
+    <tr><td>Junior tester</td><td>różne (m.in. przez Soulab HRappka)</td><td>Lublin</td><td class="num">7 000–9 000 zł brutto</td><td>Angielski B2/C1, Jira, Confluence <a class="ref" href="#s17">[17]</a></td></tr>
+    <tr><td>Analityk KYC/AML</td><td>Grupa OEX / Axendi</td><td>Lublin</td><td class="num">brak danych</td><td>Wymaga min. 2 lat w KYC/AML, więc to cel na później, nie wejście <a class="ref" href="#s18">[18]</a></td></tr>
+    <tr><td>Analityk kredytowy</td><td>SKOK Chmielewskiego, Santander</td><td>Lublin</td><td class="num">brak danych</td><td>Rola „bankowa bez sprzedaży”, ale część ofert łączy analizę z opieką nad klientem <a class="ref" href="#s19">[19]</a></td></tr>
+    <tr><td>Specjalista ds. rekrutacji</td><td>Faktoria Novum</td><td>Lublin</td><td class="num">4 500–10 000 zł brutto</td><td>Rekrutacja to dużo rozmów telefonicznych <a class="ref" href="#s20">[20]</a></td></tr>
+    <tr><td>Data Quality Specialist</td><td>EOS Poland; Bank Pekao (Analityk Jakości Danych)</td><td>Warszawa</td><td class="num">brak danych</td><td>Most między back office a analityką <a class="ref" href="#s21">[21]</a></td></tr>
+  </tbody>
+</table></div>
+
+<h2>Ocena wszystkich kierunków z listy</h2>
+<div class="prose"><p>Skala: <span class="pill g">dobrze</span> <span class="pill w">średnio</span> <span class="pill b">słabo</span>. „Dopasowanie” oceniam wobec tego, co wiadomo z rozmowy: bank w CV, dokładność, research, pisanie, ciekawość ludzi, a także niechęć do telefonu, sprzedaży i targetów. Widełki płac to orientacyjne kwoty brutto miesięcznie na umowie o pracę dla osoby początkującej, jeśli źródło nie mówi inaczej.</p></div>
+<div class="tbl"><table>
+  <thead><tr><th>Kierunek</th><th>Popyt (L / W)</th><th>Bariera wejścia</th><th>Start, brutto</th><th>Ryzyko AI</th><th>Ryzyko telefonu</th><th>Dopasowanie</th><th>Werdykt</th></tr></thead>
+  <tbody>
+    <tr><td><b>Back office / operacje</b></td><td><span class="pill g">duży / duży</span></td><td><span class="pill g">niska, bank w CV</span></td><td class="num">6 500–8 000; mediana spec. ds. operacyjnych 8 040 <a class="ref" href="#s22">[22]</a></td><td><span class="pill w">średnie</span></td><td><span class="pill w">sprawdzać opis</span></td><td><span class="pill g">wysokie</span></td><td><b>Wejście nr 1</b></td></tr>
+    <tr><td><b>KYC / AML / weryfikacja klientów</b></td><td><span class="pill w">mały / duży</span></td><td><span class="pill g">niska–średnia</span></td><td class="num">brak wiarygodnych danych dla juniora</td><td><span class="pill w">średnie</span></td><td><span class="pill g">niskie</span></td><td><span class="pill g">bardzo wysokie</span></td><td><b>Wejście nr 1, wersja „ambitna”</b></td></tr>
+    <tr><td>Weryfikacja dokumentów / danych</td><td><span class="pill w">średni / duży</span></td><td><span class="pill g">niska</span></td><td class="num">jak back office</td><td><span class="pill b">wysokie</span></td><td><span class="pill g">niskie</span></td><td><span class="pill w">średnie, monotonne</span></td><td>Tak, jako furtka</td></tr>
+    <tr><td>Quality / jakość danych</td><td><span class="pill w">mały / średni</span></td><td><span class="pill w">średnia, Excel</span></td><td class="num">brak danych</td><td><span class="pill w">średnie</span></td><td><span class="pill g">niskie</span></td><td><span class="pill g">wysokie</span></td><td>Cel po kursie Excel/BI</td></tr>
+    <tr><td>E-commerce assistant</td><td><span class="pill w">mały / duży</span></td><td><span class="pill w">średnia, często ang. B2</span></td><td class="num">6 000–7 000 <a class="ref" href="#s23">[23]</a></td><td><span class="pill b">wysokie (opisy produktów)</span></td><td><span class="pill w">zależy</span></td><td><span class="pill w">średnie</span></td><td>Opcja w Warszawie</td></tr>
+    <tr><td>Content moderation / anotacja dla AI</td><td><span class="pill g">zdalnie</span></td><td><span class="pill g">bardzo niska</span></td><td class="num">36,36 zł/h (ok. 6 100 przy pełnym etacie) <a class="ref" href="#s15">[15]</a></td><td><span class="pill w">to praca „dla” AI, projekty się kończą</span></td><td><span class="pill g">brak</span></td><td><span class="pill w">średnie</span></td><td>Na start lub dorywczo</td></tr>
+    <tr><td><b>Excel / Power BI (analityka)</b></td><td><span class="pill w">średni / duży</span></td><td><span class="pill w">kurs 2–4 mies.</span></td><td class="num">6 000–8 000; źródła podają różnie <a class="ref" href="#s24">[24]</a></td><td><span class="pill w">średnie</span></td><td><span class="pill g">niskie</span></td><td><span class="pill g">wysokie</span></td><td><b>Najlepszy kurs</b></td></tr>
+    <tr><td><b>Manual QA / tester</b></td><td><span class="pill w">mały / średni</span></td><td><span class="pill b">wysoka, junior = 4,79% ofert IT</span></td><td class="num">mediana 6 750 UoP / 8 190 B2B <a class="ref" href="#s25">[25]</a></td><td><span class="pill w">średnie</span></td><td><span class="pill g">niskie</span></td><td><span class="pill g">wysokie</span></td><td>Eksperyment, potem decyzja</td></tr>
+    <tr><td>Research / research assistant</td><td><span class="pill b">bardzo mały / mały</span></td><td><span class="pill w">średnia</span></td><td class="num">brak danych</td><td><span class="pill b">wysokie (desk research)</span></td><td><span class="pill w">badania ankietowe = telefon</span></td><td><span class="pill g">wysokie</span></td><td>Umiejętność, nie etat</td></tr>
+    <tr><td>UX Research</td><td><span class="pill b">bardzo mały</span></td><td><span class="pill b">wysoka</span></td><td class="num">junior UX designer (brak danych dla researchera): 8 000–11 000 <a class="ref" href="#s26">[26]</a></td><td><span class="pill w">średnie</span></td><td><span class="pill w">wywiady z ludźmi</span></td><td><span class="pill g">wysokie</span></td><td>Cel długoterminowy</td></tr>
+    <tr><td>UX Writing</td><td><span class="pill b">bardzo mały</span></td><td><span class="pill b">wysoka, portfolio</span></td><td class="num">średnio ok. 9 200, nie junior <a class="ref" href="#s26">[26]</a></td><td><span class="pill b">wysokie</span></td><td><span class="pill g">niskie</span></td><td><span class="pill g">wysokie</span></td><td>Hobby i portfolio</td></tr>
+    <tr><td>Copywriting / content</td><td><span class="pill b">spada</span></td><td><span class="pill w">portfolio</span></td><td class="num">junior marketing: średnio ok. 5 550 <a class="ref" href="#s27">[27]</a></td><td><span class="pill b">bardzo wysokie (−51% zleceń)</span></td><td><span class="pill g">niskie</span></td><td><span class="pill g">wysokie</span></td><td>Nie jako główny plan</td></tr>
+    <tr><td>Social media assistant</td><td><span class="pill w">średni</span></td><td><span class="pill w">portfolio</span></td><td class="num">brak danych</td><td><span class="pill w">średnie</span></td><td><span class="pill w">często premia od wyników</span></td><td><span class="pill w">średnie</span></td><td>Test na kanałach męża</td></tr>
+    <tr><td>HR / rekrutacja</td><td><span class="pill w">średni / duży</span></td><td><span class="pill g">niska</span></td><td class="num">4 500–10 000 <a class="ref" href="#s20">[20]</a></td><td><span class="pill w">średnie</span></td><td><span class="pill b">wysokie</span></td><td><span class="pill w">ciekawość ludzi tak, telefon nie</span></td><td>Raczej HR admin / onboarding</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Trzy ścieżki, które polecam</h2>
+<div class="paths">
+  <article class="path main">
+    <header><h3>A. Back office i KYC w finansach</h3><span class="tag">start: od razu · bez kursu</span></header>
+    <p>To najbardziej realna szybka ucieczka od telefonu i sprzedaży. Doświadczenie z banku oznacza znajomość procedur, systemów, dokumentów kredytowych i tożsamości klienta. Dla rekrutera back office to od razu „rozumie, o co chodzi”.</p>
+    <dl class="kv">
+      <dt>Szukane hasła</dt><dd><span class="kw">back office</span> <span class="kw">specjalista ds. operacyjnych</span> <span class="kw">KYC</span> <span class="kw">AML</span> <span class="kw">weryfikacja</span> <span class="kw">obsługa procesów kredytowych</span> <span class="kw">dokumentacja kredytowa</span> <span class="kw">transaction monitoring</span></dd>
+      <dt>Gdzie</dt><dd>Lublin: Genpact, Concentrix, Orange (centrum operacyjne), Generali, SKOK-i, banki (działy operacyjne, nie contact center). Warszawa hybrydowo: banki, BNP Paribas, EY, Credit Agricole i firmy audytorskie.</dd>
+      <dt>Pieniądze</dt><dd>Realnie 6 500–8 000 zł brutto na start; język obcy (niemiecki, angielski B2+) dokłada ok. 1–2 tys.</dd>
+      <dt>Przyszłość</dt><dd>Po 1–2 latach w KYC/AML otwierają się oferty z wymogiem doświadczenia (np. ta z Lublina wymagała 2 lat). To role analityczne, bez targetów, z mniejszym ryzykiem automatyzacji niż czyste wprowadzanie danych.</dd>
+      <dt>Ryzyko</dt><dd>Monotonia i część ofert „back office”, które w praktyce są infolinią. Patrz sekcja z czerwonymi flagami.</dd>
+    </dl>
+  </article>
+
+  <article class="path">
+    <header><h3>B. Excel → Power Query → Power BI</h3><span class="tag">kurs: 2–4 miesiące, równolegle z pracą</span></header>
+    <p>To kurs z najlepszym stosunkiem kosztu do efektu. Nie zmienia zawodu na siłę, tylko dokłada umiejętność, dzięki której z „pracownika back office” robi się „osoba od raportów i jakości danych”. Taka rola trudniej daje się zastąpić AI i jest lepiej płatna.</p>
+    <dl class="kv">
+      <dt>Co po kursie</dt><dd>Aplikacje na: <span class="kw">specjalista ds. raportowania</span> <span class="kw">młodszy analityk operacyjny</span> <span class="kw">data quality</span> <span class="kw">analityk jakości danych</span> <span class="kw">junior BI</span> <span class="kw">controlling operacyjny</span>. Najłatwiej przejść wewnętrznie: najpierw etat back office z ścieżki A, potem raporty w tym samym dziale.</dd>
+      <dt>Portfolio</dt><dd>2–3 dashboardy w Power BI na publicznych danych (np. GUS, dane miejskie Lublina) z krótkim opisem wniosków. Tu przydaje się jej talent do researchu i opowiadania.</dd>
+      <dt>Pieniądze</dt><dd>Junior analityk: źródła podają od ok. 6 000 do 8 000 zł brutto, jedno nawet 7 500–11 000. Rozrzut jest duży, więc przyjmij dolną granicę jako realną.</dd>
+      <dt>Koszt kursu</dt><dd>Przykład z Lublina: Ośrodek Kursor, kursy 40–80 h za 1 199–4 000 zł, z możliwym dofinansowaniem BUR/KFS <a class="ref" href="#s28">[28]</a>. Sprawdź też bezpłatne materiały Microsoft Learn przed zapłatą.</dd>
+    </dl>
+  </article>
+
+  <article class="path">
+    <header><h3>C. Tester manualny z bankową specjalizacją</h3><span class="tag">eksperyment 2–4 tyg. → ewentualnie kurs + ISTQB</span></header>
+    <p>Kierunek pasuje do jej sposobu myślenia (szukanie błędów, opisywanie problemu), ale rynek dla juniorów jest twardy. Juniorzy to 4,79% ofert IT, a mediana startowa na UoP wynosi 6 750 zł, czyli tyle co dobry back office <a class="ref" href="#s25">[25]</a>. Finansowo na początku nic to nie daje. Zysk pojawia się po 2–3 latach (mid: mediana 12 000 zł UoP).</p>
+    <dl class="kv">
+      <dt>Test przed kursem</dt><dd>Darmowe materiały ISTQB Foundation (sylabus), zgłaszanie błędów w publicznych aplikacjach testowych, jeden projekt w Jira. Jeśli po 2–4 tygodniach nadal ją to wciąga, dopiero wtedy płatny kurs.</dd>
+      <dt>Certyfikat</dt><dd>ISTQB Foundation: egzamin ok. 780–900 zł netto zależnie od organizatora <a class="ref" href="#s29">[29]</a>.</dd>
+      <dt>Przewaga</dt><dd>Aplikować tam, gdzie testuje się bankowość (np. oferta ITFS w Lublinie dotyczyła bankowości internetowej). Zna procesy od strony klienta i banku, a większość juniorów po kursach tego nie ma.</dd>
+      <dt>Realizm</dt><dd>Nastawić się na 50–100+ aplikacji i kilka miesięcy szukania. Dlatego ta ścieżka idzie równolegle z pracą z ścieżki A, a nie zamiast niej.</dd>
+    </dl>
+  </article>
+</div>
+
+<h2>Plan na najbliższe miesiące</h2>
+<div class="timeline prose">
+  <div class="step"><div class="when">Tydzień 1–2</div><p>CV w wersji „operacje i procedury”, bez sprzedaży na pierwszym planie. Opisać: weryfikację dokumentów, pracę w systemach bankowych, procedury, wyjątki i reklamacje. 10–15 aplikacji na back office i KYC w Lublinie oraz hybrydowo w Warszawie. Równolegle start darmowego testu QA.</p></div>
+  <div class="step"><div class="when">Tydzień 3–6</div><p>Pierwsze rozmowy. Na każdej zadać pytanie: „Jaki procent dnia to kontakt telefoniczny z klientem i czy są cele sprzedażowe?”. Decyzja w sprawie QA: kontynuować czy odpuścić. Zapis na kurs Excel/Power Query, najlepiej z dofinansowaniem.</p></div>
+  <div class="step"><div class="when">Miesiąc 2–4</div><p>Zmiana pracy na back office lub KYC. Kurs Power BI. Pierwszy dashboard do portfolio.</p></div>
+  <div class="step"><div class="when">Miesiąc 4–12</div><p>W nowej pracy przejmować raporty i zadania jakościowe. Po ok. roku aplikować na analityka operacyjnego / data quality albo, jeśli QA wciągnęło, na juniora testera w fintechu. Pisanie, humor i muzyka równolegle jako projekty własne.</p></div>
+</div>
+
+<h2>Jak rozpoznać ofertę, która jest „telefonem w przebraniu”</h2>
+<div class="flags">
+  <div class="flag"><h3 style="color:var(--bad)">Czerwone flagi w opisie</h3><ul>
+    <li><code>contact center</code>, <code>infolinia</code>, <code>outbound</code>, <code>inbound</code></li>
+    <li>„kontakt telefoniczny z klientami”, „obsługa połączeń”</li>
+    <li>„realizacja celów”, „premia od wyników”, „system prowizyjny”</li>
+    <li>„cross-selling”, „oferowanie produktów”, „aktywna sprzedaż”</li>
+    <li>„praca w grafiku zmianowym” przy obsłudze klienta</li>
+  </ul></div>
+  <div class="flag"><h3 style="color:var(--good)">Dobre sygnały</h3><ul>
+    <li>„weryfikacja”, „analiza dokumentów”, „procedury”, „zgodność”</li>
+    <li>„kontakt z klientem mailowo”, „kontakt wewnętrzny z zespołami”</li>
+    <li>„raportowanie”, „Excel”, „jakość danych”</li>
+    <li>stałe wynagrodzenie bez części zmiennej zależnej od sprzedaży</li>
+  </ul></div>
+</div>
+
+<h2>Dofinansowanie kursów</h2>
+<div class="prose">
+  <p><b>BUR (Baza Usług Rozwojowych), województwo lubelskie:</b> projekt dla osób dorosłych mieszkających, pracujących lub uczących się w regionie, do 5 000 zł netto na osobę. Znaleziony nabór miał okres realizacji do 30.06.2026 <a class="ref" href="#s30">[30]</a>, więc trzeba sprawdzić, czy jest nowa edycja (np. „Kompetencje przyszłości” dla Lublina i okolicznych powiatów <a class="ref" href="#s31">[31]</a>).</p>
+  <p><b>Miejski Urząd Pracy w Lublinie:</b> szkolenia indywidualne dla osób zarejestrowanych jako bezrobotne lub poszukujące pracy <a class="ref" href="#s32">[32]</a>. Ma to sens głównie wtedy, gdy przerwa między pracami jest planowana.</p>
+  <p><b>KFS</b> działa przez pracodawcę, więc przydaje się dopiero po zmianie pracy (np. nowy pracodawca finansuje Power BI).</p>
+</div>
+
+<h2>Weryfikacja ręczna w 15 minut</h2>
+<div class="prose">
+  <p>Te wyszukiwania warto zrobić na telefonie, żeby zobaczyć aktualne liczby, bo ja nie miałem do nich dostępu. Na pracuj.pl ustaw lokalizację <b>Lublin</b>, a potem <b>Warszawa</b> z filtrem „praca zdalna/hybrydowa”:</p>
+  <ul>
+    <li><a href="https://www.pracuj.pl/praca/back%20office;kw/lublin;wp">pracuj.pl: back office, Lublin</a></li>
+    <li><a href="https://www.pracuj.pl/praca/analityk%20kyc;kw">pracuj.pl: analityk KYC</a> · <a href="https://www.pracuj.pl/praca/analityk%20aml-x47-kyc;kw">analityk AML/KYC</a></li>
+    <li><a href="https://www.pracuj.pl/praca/tester%20oprogramowania;kw/lublin;wp">pracuj.pl: tester oprogramowania, Lublin</a></li>
+    <li><a href="https://www.pracuj.pl/praca/specjalista%20ds.%20weryfikacji%20dokument%C3%B3w;kw">pracuj.pl: specjalista ds. weryfikacji dokumentów</a></li>
+    <li><a href="https://www.pracuj.pl/praca/lublin;wp/administracja%20biurowa;cc,5001">pracuj.pl: administracja biurowa, Lublin</a></li>
+    <li><a href="https://www.karierawfinansach.pl/praca/aml-kyc">karierawfinansach.pl: AML/KYC</a></li>
+    <li><a href="https://justjoin.it/job-offers/all-locations/testing">justjoin.it: testing</a> (filtr: junior)</li>
+  </ul>
+  <p>Przy każdej ofercie zanotować: widełki, tryb pracy, czy jest telefon lub sprzedaż, wymagany język. Po 30 ofertach wzorzec będzie wyraźny. Mogę wtedy przeanalizować te notatki.</p>
+</div>
+
+<h2>Czego ta analiza nie rozstrzyga</h2>
+<div class="prose">
+  <p>Nie znam jej obecnego stanowiska, wynagrodzenia ani poziomu angielskiego. Te trzy rzeczy najbardziej zmieniają wybór: angielski B2+ otwiera większość ofert KYC, e-commerce i QA w dużych firmach, a obecna pensja mówi, czy zmiana na 6 500–8 000 zł jest awansem, czy krokiem w tył. Brakuje też wiarygodnych danych płacowych dla juniora KYC, researchu i social mediów. Tam, gdzie ich nie było, napisałem „brak danych” zamiast zgadywać.</p>
+</div>
+
+<section class="src" id="zrodla">
+  <h2>Źródła</h2>
+  <ol>
+    <li id="s1"><a href="https://elementapp.ai/blog/oferty-pracy-polska-sierpien-2026-raport-grant-thornton/">Oferty pracy w Polsce, sierpień 2026 (Grant Thornton), elementapp.ai</a>; <a href="https://pro.rp.pl/raporty-ekonomiczne/art45136711-duze-miasta-korzystaja-na-ozywieniu-rekrutacji">rp.pl</a></li>
+    <li id="s2"><a href="https://absl.pl/pl/news/p/rosnie-pozycja-lublina-w-sektorze-uslug-biznesowych-w-polsce">ABSL: Rośnie pozycja Lublina w sektorze usług biznesowych</a></li>
+    <li id="s3"><a href="https://forsal.pl/gospodarka/aktualnosci/artykuly/10599913,placa-minimalna-w-2026-roku-oto-dokladne-kwoty-brutto-i-netto.html">Forsal: płaca minimalna 2026</a></li>
+    <li id="s4"><a href="https://lublin.stat.gov.pl/">Urząd Statystyczny w Lublinie</a> (liczba z wyszukiwarki, okres niepodany)</li>
+    <li id="s5"><a href="https://wynagrodzenia.pl/artykul/wynagrodzenia-w-miastach-2026">wynagrodzenia.pl: Wynagrodzenia w miastach 2026</a></li>
+    <li id="s6"><a href="https://itwiz.pl/ai-zabiera-zlecenia-copywriterom-liczba-ofert-spadla-o-ponad-50/">ITwiz: AI zabiera zlecenia copywriterom</a>; <a href="https://www.egospodarka.pl/197525,Copywriting-pod-presja-AI-Ponad-polowa-zlecen-zniknela-z-rynku,1,39,1.html">eGospodarka</a></li>
+    <li id="s7"><a href="https://mambiznes.pl/news/wplyw-ai-na-rynek-pracy-raport-polskiego-instytutu-ekonomicznego/">MamBiznes: raport PIE o wpływie AI</a>; <a href="https://forsal.pl/gospodarka/aktualnosci/artykuly/10642427,najbardziej-zagrozone-zawody-w-polsce-w-2026-2027-r-i-w-latach-kolej.html">Forsal</a></li>
+    <li id="s8"><a href="https://justjoin.it/raport-wynagrodzen/ogloszenia-o-prace-w-liczbach">Just Join IT: Raport wynagrodzeń 2026</a></li>
+    <li id="s9"><a href="https://www.propertynews.pl/raporty/oferty-pracy-zdalnej-przyciagaja-tlumy-hybryda-nie-daje-takich-wynikow,199232.html">PropertyNews: praca zdalna i hybryda</a></li>
+    <li id="s10"><a href="https://prnews.pl/na-oferty-pracy-zdalnej-odpowiada-45-razy-wiecej-osob-niz-w-przypadku-pracy-stacjonarnej-najnowsze-dane-o-polskim-rynku-pracy-492176">PRNews: 4,5 raza więcej odpowiedzi na oferty zdalne</a></li>
+    <li id="s11"><a href="https://focusonbusiness.eu/pl/wiadomosci/lublin-otwarty-na-biznes-bpo-i-ssc/1198">Focus on Business: Lublin otwarty na BPO i SSC</a>; <a href="https://lublin.eu/biznes-i-nauka/inwestorzy/kluczowe-branze/branza-bpo-ssc-it/">lublin.eu</a> (lista firm może być częściowo nieaktualna)</li>
+    <li id="s12"><a href="https://bk.up.lublin.pl/zajmij-stanowisko-w-pko-banku-polskim">Biuro Karier UP Lublin: PKO BP</a></li>
+    <li id="s13"><a href="https://pl.indeed.com/q-kyc-analyst-l-warszawa,-mazowieckie-oferty-pracy.html">Indeed: KYC Analyst, Warszawa</a></li>
+    <li id="s14"><a href="https://careers.ey.com/ey/job/Warszawa-Junior-AML-Analyst-00-124/1289742501/">EY: Junior AML Analyst, Warszawa</a></li>
+    <li id="s15"><a href="https://www.pracuj.pl/praca/ai-content-moderator-backoffice-praca-z-liderem-elektroniki-premium-lublin,oferta,1004644188">pracuj.pl: AI Content Moderator, Concentrix, Lublin</a></li>
+    <li id="s16"><a href="https://lublin.lento.pl/back-office-wprowadzanie-danych-z,15174162.html">lento.pl: Back office z niemieckim, Lublin</a></li>
+    <li id="s17"><a href="https://solid.jobs/offer/38390/itfs-tester-manualny">SOLID.Jobs: Tester manualny, ITFS</a>; <a href="https://pl.jobsora.com/praca/lublin/q-junior-tester-manualny">Jobsora: junior tester manualny, Lublin</a></li>
+    <li id="s18"><a href="https://skk.erecruiter.pl/Offer.aspx?oid=4921109&amp;cfg=B63D322DB297472BBDDC7C82E10F2B03&amp;ejoId=586736&amp;ejorId=312439&amp;comId=20133243">eRecruiter: Analityk KYC/AML, Lublin</a></li>
+    <li id="s19"><a href="https://www.pracuj.pl/praca/analityk-kredytowy-lublin,oferta,1002113516">pracuj.pl: Analityk kredytowy, SKOK, Lublin</a></li>
+    <li id="s20"><a href="https://www.pracuj.pl/praca/rekruter;kw/lublin;wp">pracuj.pl: rekruter, Lublin</a></li>
+    <li id="s21"><a href="https://www.pracuj.pl/praca/data-quality-specialist-specjalista-ds-jakosci-danych-warszawa,oferta,1002054372">pracuj.pl: Data Quality Specialist, EOS, Warszawa</a></li>
+    <li id="s22"><a href="https://wynagrodzenia.pl/moja-placa/ile-zarabia-specjalista-do-spraw-operacyjnych">wynagrodzenia.pl: specjalista ds. operacyjnych</a></li>
+    <li id="s23"><a href="https://pl.indeed.com/q-e-commerce-specialist-l-warszawa,-mazowieckie-oferty-pracy.html">Indeed: E-commerce specialist, Warszawa</a></li>
+    <li id="s24"><a href="https://www.zarobto.pl/ile-zarabia/analityk-danych">ZaróbTo: analityk danych</a>; <a href="https://uniwersytetydlawszystkich.pl/ile-zarabia-analityk-danych/">uniwersytetydlawszystkich.pl</a></li>
+    <li id="s25"><a href="https://testerzy.pl/baza-wiedzy/artykuly/raport-zarobkow-testerow-2026-od-just-join-it">testerzy.pl: Raport zarobków testerów 2026 (Just Join IT)</a></li>
+    <li id="s26"><a href="https://internetoweportfolio.pl/ile-zarabia-ux-writer/">Ile zarabia UX writer</a>; <a href="https://theprotocol.it/zarobki/ux-designer">theprotocol.it: UX Designer</a></li>
+    <li id="s27"><a href="https://pl.jooble.org/salary/junior-marketing/Warszawa">Jooble: wynagrodzenie junior marketing</a> (agregator, dane orientacyjne)</li>
+    <li id="s28"><a href="https://www.kursor.edu.pl/szkolenia/lublin/">Ośrodek Szkoleniowy Kursor, Lublin</a></li>
+    <li id="s29"><a href="https://sjsi.org/oplaty-egzaminacyjne/">SJSI: opłaty egzaminacyjne ISTQB</a>; <a href="https://qa-szkolenia.pl/egzaminy-istqb.html">qa-szkolenia.pl</a></li>
+    <li id="s30"><a href="https://www.lfr.lublin.pl/projekty-lfr/">Lubelska Fundacja Rozwoju: projekty</a></li>
+    <li id="s31"><a href="https://www.funduszeunijne.gov.pl/nabory/kompetencje-przyszlosci-uslugi-rozwojowe-dla-osob-doroslych-w-podregionie-lubelskim/">Kompetencje przyszłości, podregion lubelski</a></li>
+    <li id="s32"><a href="https://muplublin.praca.gov.pl/dla-bezrobotnych-i-poszukujacych-pracy/podnoszenie-kwalifikacji/szkolenia">Miejski Urząd Pracy w Lublinie: szkolenia</a></li>
+  </ol>
+</section>
+
+<footer>Analiza przygotowana 27.09.2026 na podstawie publicznie dostępnych danych. Stawki i liczby ofert zmieniają się co tydzień, więc przed decyzją o kursie warto zrobić weryfikację ręczną z sekcji wyżej.</footer>
+</div>
