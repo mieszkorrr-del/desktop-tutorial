@@ -136,6 +136,12 @@ class EURUSDScalperV1(bt.Strategy):
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
             if self._is_entry(order):
                 self.log(f"Wejscie odrzucone/anulowane (status {order.getstatusname()})")
+            elif self.closing and any(order.ref == o.ref for o in self.exit_orders):
+                # zamkniecie nie przeszlo - bez resetu bot zamarza z otwarta pozycja
+                # bez SL/TP (_close_all anulowal je wczesniej); ponow na kolejnej swiecy
+                self.log(f"BLAD: zamkniecie odrzucone (status {order.getstatusname()}), ponawiam")
+                self.closing = False
+                self.exit_orders = []
 
     def notify_trade(self, trade):
         if trade.isclosed:

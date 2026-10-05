@@ -23,6 +23,7 @@ C:\BOT TRADING 3.0\
 ├─ strategies\        kod botów (jeden plik = jedna strategia)
 ├─ backtests\         wyniki, screeny, eksporty z Studio
 ├─ data\              dane historyczne (poza gitem)
+├─ tests\             testy techniczne (mechanika zleceń, nie zyskowność)
 └─ docs\              decyzje i notatki
 ```
 
