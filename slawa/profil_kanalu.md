@@ -18,6 +18,7 @@ Nie wpisuj tu haseł ani danych logowania.
 -
 
 ## Możliwości
+- Streamy: zwykle od ok. 18:00, kilka godzin, 3 gry po kolei: najpierw LoL, w środku Dawnwalker, wieczorem horrory. Każda zmiana gry to osobna sesja LIVE (stąd 2–3 sesje dziennie).
 - Czas tygodniowo na nagrywanie i montaż:
 - Sprzęt i aplikacje (telefon, mikrofon, CapCut itp.):
 - Ile filmów tygodniowo publikuję teraz:
@@ -32,7 +33,7 @@ Nie wpisuj tu haseł ani danych logowania.
 - LIVE (84 sesje, 1.09–6.10): ok. 195 h na żywo w 32 dni, 12 tys. unikalnych widzów, 71 nowych obserwujących (główne źródło obserwujących), 1928 diamentów, z czego 1258 z jednej sesji (29.09). Mediana średniej liczby widzów naraz to 1.
   - Średnio 2,6 sesji dziennie, 15 dni z 3+ sesjami, 8 sesji krótszych niż 15 min.
   - Sesje, w których widzowie zostają powyżej 2 min: 31 obserwujących w 69 h, mediana 99 komentarzy. Sesje poniżej 45 s: 18 obserwujących w 68 h, mediana 13 komentarzy.
-  - Pora startu (sesje LoL): starty 00–05 i 22–24 mają więcej widzów naraz (5 i 3) i dłuższe oglądanie (118 s i 90 s) niż starty 16–19 (1 widz, 30 s). Próbki są małe.
+  - Sesje według kolejności w dniu (od 24.09; gra przypisana na podstawie opisu twórcy, niepotwierdzona per sesja): pierwsza sesja (LoL, start ~18) to mediana 0 widzów naraz, 35 s oglądania i 1,6 obserwującego na 10 h; środkowa (Dawnwalker) to 1 widz, 76 s i 3,4/10 h; ostatnia (horror, start ~22) to 3 widzów, 147 s, 5,9/10 h, mediana 97 komentarzy i 1559 z ok. 1700 diamentów. Nie da się oddzielić wpływu gry od pory dnia.
   - Kafelek „Czas trwania filmu LIVE: 19 h 8 min” z przeglądu nie zgadza się z sumą sesji (ok. 195 h); bardziej wiarygodna jest lista sesji.
   - Widzowie LIVE: Polska 94%; wiek 25–34: 42%, 18–24: 25%; mężczyźni 51%, kobiety 49%. Źródła: rekomendacje LIVE 71%, obserwowani 7%.
 - Instagram (2026-10-07): 50 postów, 4 obserwujących, 3 obserwowanych. Bio: „Gram, bawię się i streamuję 🎮 / Wpadaj, zostaw follow – będzie spoko! 👋 / Twitch: Pysiex_”. Posty to te same klipy co na TikToku. Wyświetleń rolek jeszcze nie znam.
@@ -44,4 +45,4 @@ Nie wpisuj tu haseł ani danych logowania.
 
 ## Notatki z wcześniejszych rozmów
 - 2026-10-06, pierwszy audyt z siatki profilu i przeglądu LIVE. Hipotezy do sprawdzenia: (1) w klipach brakuje tekstowego hooka w pierwszej sekundzie, bo miniaturki wyglądają niemal identycznie; (2) horrory i memy osłabiają kanał; (3) LIVE dociera głównie do obcych osób (71% z rekomendacji), więc kluczowe jest zamienianie ich w obserwujących.
-- 2026-10-07, pełne dane: hipotezy (1) i (2) potwierdzone danymi. Nowe hipotezy do testu: opis z harmonogramem live zamiast opisu sytuacji obniża zasięg klipów; streamy późnym wieczorem działają lepiej niż o 18:00; restarty streamu (kilka sesji dziennie) rozbijają widownię.
+- 2026-10-07, pełne dane: hipotezy (1) i (2) potwierdzone danymi. Nowe hipotezy do testu: opis z harmonogramem live zamiast opisu sytuacji obniża zasięg klipów. LoL działa w klipach, ale słabo na LIVE, a horror odwrotnie (słabe klipy, najlepsze LIVE). Test: zamienić kolejność gier (horror o 18:00), żeby oddzielić wpływ gry od pory.
