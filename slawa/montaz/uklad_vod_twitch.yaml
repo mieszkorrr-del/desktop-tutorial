@@ -1,16 +1,16 @@
 # Układ dla POZIOMEGO nagrania streamu z Twitcha (16:9) → pion 1080x1920.
-# UWAGA: prostokąt kamerki to wartość PRZYKŁADOWA. Ustaw go na swoim nagraniu:
+# Zmierzone na zrzucie streamu @pysiex_ (1920x1080), 2026-10-07: kamerka w lewym dolnym rogu.
+# Jeśli zmienisz scenę w OBS, sprawdź kadr:
 #   python montuj.py moment_01_....mp4 --uklad uklad_vod_twitch.yaml --podglad-ukladu 20
-# i popraw liczby, aż czerwona ramka obejmie kamerkę, a zielona grę.
 # Prostokąty: [x, y, szerokość, wysokość] jako ułamki klatki (0–1), licząc od lewego górnego rogu.
 
 zrodlo:
-  kamerka: [0.0, 0.62, 0.22, 0.38]   # PRZYKŁAD: kamerka w lewym dolnym rogu
-  gra: [0.0, 0.0, 1.0, 1.0]          # cały ekran gry
-  gra_srodek_x: 0.5                  # w LoL bohater jest zwykle na środku ekranu
+  kamerka: [0.0, 0.733, 0.263, 0.267] # lewy dolny róg, ok. 505x288 px
+  gra: [0.27, 0.04, 0.73, 0.96]      # bez kamerki z lewej i bez paska donejtów u góry
+  gra_srodek_x: 0.53                 # bohater w LoL jest zwykle na środku ekranu
   gra_srodek_y: 0.5
-  twarz_x: 0.11                      # środek twarzy (ułamek szerokości klatki)
-  twarz_y: 0.80                      # środek twarzy (ułamek wysokości klatki)
+  twarz_x: 0.17                      # środek twarzy (ułamek szerokości klatki)
+  twarz_y: 0.88                      # środek twarzy (ułamek wysokości klatki)
 
 wyjscie:
   szerokosc: 1080
