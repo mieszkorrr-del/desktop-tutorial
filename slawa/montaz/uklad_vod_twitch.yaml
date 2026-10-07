@@ -5,21 +5,22 @@
 # Prostokąty: [x, y, szerokość, wysokość] jako ułamki klatki (0–1), licząc od lewego górnego rogu.
 
 zrodlo:
-  kamerka: [0.0, 0.733, 0.263, 0.267] # lewy dolny róg, ok. 505x288 px
-  gra: [0.27, 0.04, 0.73, 0.96]      # bez kamerki z lewej i bez paska donejtów u góry
-  gra_srodek_x: 0.53                 # bohater w LoL jest zwykle na środku ekranu
-  gra_srodek_y: 0.5
-  twarz_x: 0.17                      # środek twarzy (ułamek szerokości klatki)
-  twarz_y: 0.88                      # środek twarzy (ułamek wysokości klatki)
+  # Zmierzone 2026-10-07 na klatce streamu (1912x1072); wycinek gry dopasowany do zrzutu wskazanego przez twórcę.
+  kamerka: [0.0, 0.7295, 0.2605, 0.2705]   # cała ramka kamerki w lewym dolnym rogu (ok. 498x290 px)
+  gra: [0.2641, 0.0345, 0.5492, 0.9571]    # od prawej krawędzi kamerki, pod paskiem donejtów, do dołu z paskiem umiejętności
+  gra_srodek_x: 0.5387
+  gra_srodek_y: 0.513
+  twarz_x: 0.157                           # środek twarzy (ułamek szerokości klatki)
+  twarz_y: 0.86                            # środek twarzy (ułamek wysokości klatki)
+  kamerka_srodek_y: 0.845                  # kadr kamerki przy górnej krawędzi: zostaje tablica LED i neon, odpada blat
 
 wyjscie:
   szerokosc: 1080
   wysokosc: 1920
-  kamerka_proc: 0.40
+  kamerka_proc: 0.28                       # kamerka ok. 28% wysokości (twórca: może być mniej niż 30%)
   gra_przyciecie: srodek
-  # Szeroki kadr gry (więcej mapy): proporcje szer/wys wycinka gry. 1.33 = 4:3, 1.78 = cały ekran 16:9.
-  # Pod panelem gry rozmyte tło z gry, na nim napisy. Usuń tę linię, żeby wrócić do wąskiego kadru na cały dół.
-  gra_proporcje: 1.33
+  # Cały wycinek gry (1050x1026, prawie kwadrat) na pełną szerokość; pod nim rozmyte tło z napisami.
+  gra_proporcje: 1.0234
 
 hook:
   czas_s: do_kulminacji

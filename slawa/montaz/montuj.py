@@ -384,7 +384,8 @@ def layout(cfg: dict, W: int, H: int) -> dict:
         seam = even(H * z["granica_kamera_gra"])
         cam_r, game_r = (0, 0, W, seam), (0, seam, W, H - seam)
     fx, fy = z["twarz_x"] * W, z["twarz_y"] * H
-    cam = _fit(cam_r, OW / TOPH, fx, fy)
+    # kadr kamerki można zakotwiczyć wyżej niż twarz (np. żeby zmieścić tablicę LED u góry)
+    cam = _fit(cam_r, OW / TOPH, fx, z.get("kamerka_srodek_y", z["twarz_y"]) * H)
     mode = wy.get("gra_przyciecie", "srodek")
     gax = z.get("gra_srodek_x", (game_r[0] + game_r[2] / 2) / W) * W
     if mode == "gora":
