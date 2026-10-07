@@ -81,7 +81,7 @@ Każdy zmontowany klip dopisuje swoje cechy (długość, hook, liczba słów hoo
    - Nagranie: panel twórcy na Twitchu (Producent wideo → menu przy transmisji → Pobierz) albo program TwitchDownloader (darmowy, github.com/lay295/TwitchDownloader).
    - Czat: TwitchDownloader, zakładka/komenda „chat download”, format JSON. Dokładne polecenia sprawdź w `TwitchDownloaderCLI --help`, bo zależą od wersji programu.
    - Twitch przechowuje nagrania tylko przez ograniczony czas (zależnie od statusu konta), więc pobieraj je od razu po streamie.
-2. **Znajdź momenty** (głośność + wybuchy czatu, z wyprzedzeniem 45 s i 15 s po kulminacji):
+2. **Znajdź momenty** (głośność + wybuchy czatu, z wyprzedzeniem 45 s i 25 s po kulminacji):
    ```
    python znajdz_momenty.py "C:\stream\vod.mp4" --czat "C:\stream\czat.json" --ile 30
    ```

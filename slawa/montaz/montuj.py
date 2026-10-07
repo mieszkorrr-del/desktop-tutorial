@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
+from contextlib import contextmanager
 import json
 import logging
 import math
@@ -631,6 +633,20 @@ def write_plan(path: Path, rows: list[dict]) -> None:
     tmp.replace(path)  # zapis atomowy: przerwanie nie zostawi połowy pliku
 
 
+@contextmanager
+def plan_lock(folder: Path, max_age_h: float = 12):
+    """Blokada planu: analiza i montaż nie mogą jednocześnie zapisywać tego samego slawa_plan.csv."""
+    lock = folder / "slawa_plan.lock"
+    if lock.exists() and time.time() - lock.stat().st_mtime < max_age_h * 3600:
+        sys.exit(f"Plan w {folder} jest właśnie używany przez inne uruchomienie (plik {lock.name}). "
+                 f"Poczekaj, aż się skończy. Jeśli nic nie działa, usuń ten plik.")
+    lock.write_text(f"{os.getpid()} {time.strftime('%Y-%m-%d %H:%M:%S')}", encoding="utf-8")
+    try:
+        yield
+    finally:
+        lock.unlink(missing_ok=True)
+
+
 def analyze_folder(folder: Path, cfg: dict, length: float, model: str, transkrypcja: bool) -> Path:
     plan_path = folder / "slawa_plan.csv"
     rows = read_plan(plan_path) if plan_path.exists() else []
@@ -733,13 +749,15 @@ def main() -> None:
                 sys.exit(f"Nie ma pliku: {src}")
             preview_layout(src, cfg, args.podglad_ukladu, src.with_name(src.stem + "_uklad.png"))
         elif args.plan:
-            render_plan(Path(args.plan), cfg, args.model, not args.bez_cenzury, args.efekt,
-                        Path(args.folder_wyjsciowy) if args.folder_wyjsciowy else None)
+            with plan_lock(Path(args.plan).parent):
+                render_plan(Path(args.plan), cfg, args.model, not args.bez_cenzury, args.efekt,
+                            Path(args.folder_wyjsciowy) if args.folder_wyjsciowy else None)
         elif args.analiza:
             folder = Path(args.wejscie or "")
             if not folder.is_dir():
                 sys.exit(f"Nie ma folderu: {folder}")
-            analyze_folder(folder, cfg, args.dlugosc or 22, args.model, not args.bez_transkrypcji)
+            with plan_lock(folder):
+                analyze_folder(folder, cfg, args.dlugosc or 22, args.model, not args.bez_transkrypcji)
         else:
             if not args.wejscie or not Path(args.wejscie).is_file():
                 sys.exit(f"Nie ma pliku: {args.wejscie}")

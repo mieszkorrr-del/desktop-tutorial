@@ -264,7 +264,7 @@ def main() -> None:
     p.add_argument("--czat", help="czat z TwitchDownloader (JSON); przy folderze szukany automatycznie jako <nagranie>.json")
     p.add_argument("--ile", type=int, default=30, help="ile momentów wyciąć z jednego nagrania (domyślnie 30)")
     p.add_argument("--przed", type=int, default=45, help="sekund kontekstu przed kulminacją (domyślnie 45)")
-    p.add_argument("--po", type=int, default=15, help="sekund po kulminacji (domyślnie 15)")
+    p.add_argument("--po", type=int, default=25, help="sekund po kulminacji (domyślnie 25, żeby nie uciąć puenty)")
     p.add_argument("--max-na-godzine", type=int, default=3,
                    help="najwyżej tyle momentów w jednej godzinie nagrania (0 = bez limitu; domyślnie 3)")
     p.add_argument("--opoznienie-czatu", type=float, default=8.0, help="o ile s czat spóźnia się za akcją")
