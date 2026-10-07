@@ -3,7 +3,7 @@
 Robi z pionowego klipu ze streamu (kamerka u góry, gra na dole) klip według `../przepis_montazowy.yaml`:
 
 - przekadrowanie na 1080×1920; kamerka zajmuje 40% ekranu zamiast ok. 33%,
-- tekst-hook na pierwsze 1,8 s; słowa w `*gwiazdkach*` są czerwone,
+- tekst-hook (etykieta sytuacji) od 0 s do najgłośniejszej reakcji, najwyżej 8 s; słowa w `*gwiazdkach*` są czerwone,
 - zoom na grę w głośnych momentach i powiększenie twarzy w najgłośniejszym,
 - opcjonalnie efekt dźwiękowy na kulminacjach (`--efekt`) i napisy z mowy (`--napisy`),
 - wyrównanie głośności do -14 LUFS.

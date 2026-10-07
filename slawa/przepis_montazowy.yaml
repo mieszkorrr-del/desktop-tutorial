@@ -63,3 +63,28 @@ czego_nie_przenosic:
   - "sceny z filmów i seriali (wzór F: Breaking Bad), bo grożą zgłoszeniem praw autorskich"
   - "gra w poziomie z czarnymi pasami (wzór E), bo marnuje ekran"
   - "montaż samej gry z muzyką bez twarzy (wzory C, E); Twoim atutem jest reakcja"
+
+# ---------------------------------------------------------------------------
+# Research 2026-10-07: 10 kont (6 PL, 4 EN-LoL), 32 filmy; dane ze stron filmów, 14 klatek na film,
+# bez dźwięku. Konta wybrane dlatego, że rosną, więc wnioski mogą przeceniać to, co widać u zwycięzców.
+research_2026_10_07:
+  potwierdzone_na_wielu_kontach:
+    - "8/10 kont: najlepsze filmy mają tekst na ekranie od 0–0,5 s; przeciętne różnią się hookiem, nie montażem"
+    - "sytuacja/historia z puentą > montaż zagrań (kobertlol: 755k–1,6M kontra 16k na tym samym koncie)"
+    - "konta z kamerką: split kamerka 33–50% + treść"
+    - "napisy: gruby bezszeryfowy, biały + jeden kolor akcentu (najczęściej żółty), czarny obrys, ok. 45–55% wysokości"
+    - "zakończenie dodane w montażu (puenta, mem, pętla, CTA, cliffhanger) w topach 7/10 kont"
+    - "hashtagi i długość opisu: brak wzoru"
+  zgodne_z_danymi_pysiex:
+    - "opis 'Live codziennie…' zamiast sytuacji: mediana ok. 505 kontra 1076 (dane własne, ten sam wniosek co research)"
+    - "największy odpływ w 0–2 s we wszystkich 73 klipach (dane własne)"
+  do_testu:
+    - "H1 etykieta sytuacji od 0 s do reakcji (wdrożone w bocie: hook.czas_s = do_kulminacji)"
+    - "H2 split z twarzą kontra sama gra"
+    - "H3 pętla przy klipach ≤ 15 s"
+    - "H4 seria z licznikiem (Dzień X, ranga w 0 s) kontra pojedyncze klipy"
+    - "długość: research sugeruje 10–20 s dla formatu reakcji; dane własne: 20–25 s najlepsze, ale z zakłóceniami"
+  nie_wdrozone_w_bocie:
+    - "emoji w hooku (💀, ⚠️): obecna czcionka ich nie wyświetli"
+    - "plansza z puentą na końcu, pętla, wtrącenie mema"
+    - "usuwanie ciszy > 0,4 s: przy klipach z gry psułoby ciągłość akcji"

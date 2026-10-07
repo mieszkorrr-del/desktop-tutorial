@@ -172,6 +172,17 @@ def pick_font(paths: list[str]) -> str:
     raise RuntimeError("Nie znalazłem żadnej czcionki z listy 'hook.czcionki' w pliku układu.")
 
 
+def hook_duration(cfg: dict, face_peak: float | None, dur: float) -> float:
+    """Jak długo trzymać hook: liczba sekund, 'do_kulminacji' (etykieta do reakcji) albo 'caly'."""
+    mode = cfg.get("czas_s", 1.8)
+    if mode == "caly":
+        return dur
+    if mode == "do_kulminacji":
+        lo, hi = cfg.get("min_s", 1.8), cfg.get("max_s", 8.0)
+        return min(max(face_peak if face_peak is not None else lo, lo), hi, dur)
+    return min(float(mode), dur)
+
+
 def parse_accents(text: str) -> list[list[tuple[str, bool]]]:
     """Dzieli tekst na słowa; każda '*' włącza albo wyłącza kolor akcentu (także na kilka słów)."""
     words: list[list[tuple[str, bool]]] = []
@@ -425,7 +436,7 @@ def build(z_: Zlecenie, cfg: dict) -> Path:
         if z_.hook:
             hook_png = work / "hook.png"
             _, hh = render_hook(z_.hook, cfg["hook"], OW, hook_png)
-            t = cfg["hook"]["czas_s"]
+            t = hook_duration(cfg["hook"], face_peak, dur)
             inputs += ["-loop", "1", "-t", f"{t}", "-i", str(hook_png)]
             fc.append(f"[{idx}:v]format=rgba,fade=out:st={t - 0.15:.2f}:d=0.15:alpha=1[hk]")
             fc.append(f"[{last}][hk]overlay=x=0:y={max(0, TOPH - hh // 2)}:eof_action=pass[v1]")

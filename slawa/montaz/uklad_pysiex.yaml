@@ -14,7 +14,11 @@ wyjscie:
   gra_przyciecie: gora        # 'gora' obcina górę mapy, 'srodek' obcina po równo; dół z paskiem umiejętności zostaje
 
 hook:
-  czas_s: 1.8
+  # Etykieta sytuacji trzyma się do najgłośniejszej reakcji (research 2026-10-07: kobertlol, yummi trzymają
+  # tekst do reveala lub przez cały film). Inne wartości: liczba sekund (np. 1.8) albo "caly".
+  czas_s: do_kulminacji
+  min_s: 1.8
+  max_s: 8.0
   czcionki:                   # pierwsza istniejąca zostanie użyta (muszą mieć polskie znaki)
     - "C:/Windows/Fonts/impact.ttf"
     - "C:/Windows/Fonts/arialbd.ttf"
