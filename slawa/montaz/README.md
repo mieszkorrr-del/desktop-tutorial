@@ -33,13 +33,31 @@ Wynik trafia obok źródła jako `<nazwa>_slawa.mp4`. Log techniczny zapisuje si
 | Opcja | Co robi |
 |---|---|
 | `--hook` | tekst na start, 2–5 słów, prawdziwy |
-| `--dlugosc N` | tnie do N sekund wokół najgłośniejszego momentu |
+| `--dlugosc N` | wybiera N-sekundowy fragment z największą liczbą głośnych momentów |
 | `--start` / `--koniec` | ręczne cięcie (sekundy) |
 | `--efekt plik.wav` | efekt dźwiękowy na każdej kulminacji (użyj efektu, do którego masz prawa) |
 | `--napisy` | napisy z mowy, po polsku, 1–3 słowa naraz; przekleństwa maskowane (np. K***A) |
 | `--bez-cenzury` | napisy bez maskowania przekleństw |
 | `--model medium` | dokładniejsza, ale wolniejsza transkrypcja (domyślnie `small`) |
 | `--uklad` | inny plik układu (inna kamera, inny format) |
+
+## Wiele klipów naraz (folder)
+
+Trzy kroki:
+
+1. **Analiza.** Bot przegląda każdy klip, wybiera najlepszy fragment (domyślnie 22 s, z największą liczbą głośnych momentów), robi transkrypcję i zapisuje plan:
+   ```
+   python montuj.py "C:\ścieżka\do\folderu" --analiza --dlugosc 22
+   ```
+   Powstają `slawa_plan.csv` i folder `slawa_transkrypcje` (pełne transkrypcje ze znacznikami czasu, pliki .txt).
+2. **Plan.** W `slawa_plan.csv` (otwiera się w Excelu) dla każdego klipu ustaw `start`, `koniec` i `hook`. Klipy do pominięcia oznacz w kolumnie `status` jako `pomin`. Plan może za Ciebie uzupełnić lokalny Claude, czytając transkrypcje.
+3. **Montaż wszystkiego:**
+   ```
+   python montuj.py --plan "C:\ścieżka\do\folderu\slawa_plan.csv"
+   ```
+   Gotowe klipy trafiają do podfolderu `gotowe`. Po każdym klipie bot zapisuje w planie status (`gotowe` albo `blad`), więc po przerwaniu wystarczy uruchomić to samo polecenie, a bot dokończy resztę. Klipy z `blad` próbuje ponownie.
+
+Analizę można powtórzyć po dodaniu nowych plików: bot dopisze do planu tylko nowe klipy, a transkrypcji nie robi drugi raz.
 
 ## Układ kadru
 

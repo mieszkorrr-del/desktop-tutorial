@@ -16,6 +16,8 @@ Przykład:
 from __future__ import annotations
 
 import argparse
+import csv
+import json
 import logging
 import math
 import re
@@ -97,10 +99,11 @@ def loudness_curve(path: Path, start: float, end: float) -> list[tuple[float, fl
     return pts
 
 
-def find_peaks(curve: list[tuple[float, float]], cfg: dict) -> list[tuple[float, float]]:
+def peak_candidates(curve: list[tuple[float, float]], cfg: dict):
+    """Zwraca (typowa głośność, próg, lokalne maksima powyżej progu) albo None przy braku dźwięku."""
     valid = [l for _, l in curve if l > -70]
     if len(valid) < 10:
-        return []
+        return None
     base = statistics.median(valid)
     thr = base + cfg["prog_LU_ponad_mediane"]
     cands = []
@@ -110,6 +113,36 @@ def find_peaks(curve: list[tuple[float, float]], cfg: dict) -> list[tuple[float,
         window = [x for tt, x in curve[max(0, i - 5): i + 6]]
         if l >= max(window):
             cands.append((t, l))
+    return base, thr, cands
+
+
+def choose_window(curve: list[tuple[float, float]], dur: float, length: float, cfg: dict) -> tuple[float, float]:
+    """Wybiera fragment o zadanej długości z największą sumą „nadwyżki” głośności.
+
+    Fragment kończy się 1,5 s po którejś kulminacji, żeby nie ucinać reakcji. Przy remisie wygrywa późniejszy.
+    """
+    if dur <= length:
+        return 0.0, dur
+    pc = peak_candidates(curve, cfg)
+    if not pc or not pc[2]:
+        return 0.0, length
+    _, thr, cands = pc
+    best = (-1.0, 0.0, length)
+    for p, _ in cands:
+        end = min(dur, p + 1.5)
+        start = max(0.0, end - length)
+        end = min(dur, start + length)
+        score = sum(l - thr for t, l in curve if start <= t <= end and l > thr)
+        if score >= best[0]:
+            best = (score, start, end)
+    return best[1], best[2]
+
+
+def find_peaks(curve: list[tuple[float, float]], cfg: dict) -> list[tuple[float, float]]:
+    pc = peak_candidates(curve, cfg)
+    if not pc:
+        return []
+    base, thr, cands = pc
     span = curve[-1][0] - curve[0][0]
     limit = max(1, math.ceil(span / 30 * cfg.get("max_na_30s", cfg.get("max_liczba", 4))))
     chosen: list[tuple[float, float]] = []
@@ -221,30 +254,52 @@ def cenzuruj(slowo: str) -> str:
     return m[1] + rdzen[0] + "*" * (len(rdzen) - 2) + rdzen[-1] + m[3]
 
 
-def make_subtitles(path: Path, start: float, end: float, font_name: str, ow: int, oh: int,
-                   top_h: int, workdir: Path, model_size: str, cenzura: bool = True) -> Path | None:
+_MODELE: dict = {}
+
+
+def transcribe_file(path: Path, model_size: str, cache_dir: Path) -> list[dict] | None:
+    """Transkrypcja całego pliku (słowa ze znacznikami czasu). Wynik zapisywany w cache_dir."""
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache = cache_dir / f"{path.stem}.json"
+    if cache.exists():
+        return json.loads(cache.read_text(encoding="utf-8"))
     try:
         from faster_whisper import WhisperModel
+        import numpy as np
     except ImportError:
-        log.warning("Pomijam napisy: brak faster-whisper (pip install faster-whisper).")
+        log.warning("Pomijam transkrypcję: brak faster-whisper (pip install faster-whisper).")
         return None
-    wav = workdir / "mowa.wav"
-    run(["ffmpeg", "-y", "-ss", f"{start}", "-to", f"{end}", "-i", str(path), "-vn", "-ac", "1",
-         "-ar", "16000", str(wav)])
-    log.info("Transkrypcja (model %s, pierwsze uruchomienie pobiera model)...", model_size)
-    import numpy as np
-    with wave.open(str(wav), "rb") as wf:
-        audio = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
-    model = WhisperModel(model_size, device="auto", compute_type="int8")
-    segments, _ = model.transcribe(audio, language="pl", word_timestamps=True, vad_filter=True)
-    words = [w for seg in segments for w in (seg.words or [])]
+    with tempfile.TemporaryDirectory(prefix="mowa_") as tmp:
+        wav = Path(tmp) / "mowa.wav"
+        run(["ffmpeg", "-y", "-i", str(path), "-vn", "-ac", "1", "-ar", "16000", str(wav)])
+        # Whisper dostaje gotowe próbki: faster-whisper 1.2.1 nie współpracuje z PyAV 19.
+        with wave.open(str(wav), "rb") as wf:
+            audio = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
+    if model_size not in _MODELE:
+        log.info("Ładuję model Whisper %s (pierwsze uruchomienie go pobiera)...", model_size)
+        _MODELE[model_size] = WhisperModel(model_size, device="auto", compute_type="int8")
+    log.info("Transkrypcja: %s", path.name)
+    segments, _ = _MODELE[model_size].transcribe(audio, language="pl", word_timestamps=True, vad_filter=True)
+    words, lines = [], []
+    for seg in segments:
+        lines.append(f"[{seg.start:6.1f}–{seg.end:6.1f}] {seg.text.strip()}")
+        words += [{"start": w.start, "end": w.end, "word": w.word.strip()} for w in (seg.words or [])]
+    cache.write_text(json.dumps(words, ensure_ascii=False), encoding="utf-8")
+    (cache_dir / f"{path.stem}.txt").write_text("\n".join(lines), encoding="utf-8")
+    return words
+
+
+def make_subtitles(words_all: list[dict], start: float, end: float, font_name: str, ow: int, oh: int,
+                   top_h: int, workdir: Path, cenzura: bool = True) -> Path | None:
+    words = [dict(w, start=w["start"] - start, end=w["end"] - start)
+             for w in words_all if w["start"] >= start - 0.05 and w["end"] <= end + 0.05]
     if not words:
-        log.info("Brak mowy do napisów.")
+        log.info("Brak mowy do napisów w wybranym fragmencie.")
         return None
     chunks, cur = [], []
     for w in words:
         cur.append(w)
-        if len(cur) >= 3 or (cur[-1].end - cur[0].start) > 0.9:
+        if len(cur) >= 3 or (cur[-1]["end"] - cur[0]["start"]) > 0.9:
             chunks.append(cur)
             cur = []
     if cur:
@@ -259,11 +314,11 @@ def make_subtitles(path: Path, start: float, end: float, font_name: str, ow: int
         "", "[Events]", "Format: Layer, Start, End, Style, Text",
     ]
     for ch in chunks:
-        slowa = [w.word.strip() for w in ch]
+        slowa = [w["word"] for w in ch]
         if cenzura:
             slowa = [cenzuruj(x) for x in slowa]
         text = " ".join(slowa).upper()
-        lines.append(f"Dialogue: 0,{ass_time(ch[0].start)},{ass_time(ch[-1].end + 0.05)},Napis,{text}")
+        lines.append(f"Dialogue: 0,{ass_time(ch[0]['start'])},{ass_time(ch[-1]['end'] + 0.05)},Napis,{text}")
     ass = workdir / "napisy.ass"
     ass.write_text("\n".join(lines), encoding="utf-8")
     log.info("Napisy: %d fragmentów.", len(chunks))
@@ -276,25 +331,42 @@ def even(x: float) -> int:
     return int(round(x / 2)) * 2
 
 
-def build(args: argparse.Namespace) -> Path:
-    cfg = yaml.safe_load(Path(args.uklad).read_text(encoding="utf-8"))
-    src = Path(args.wejscie)
+@dataclass
+class Zlecenie:
+    src: Path
+    out: Path
+    hook: str | None = None
+    start: float | None = None
+    koniec: float | None = None
+    dlugosc: float | None = None
+    napisy: bool = False
+    cenzura: bool = True
+    model: str = "small"
+    efekt: str | None = None
+
+
+def cache_dir_for(src: Path) -> Path:
+    return src.parent / "slawa_transkrypcje"
+
+
+def build(z_: Zlecenie, cfg: dict) -> Path:
+    src = z_.src
     info = probe(src)
-    log.info("Źródło: %dx%d, %.0f fps, %.1f s", info.w, info.h, info.fps, info.dur)
+    log.info("Źródło: %s, %dx%d, %.0f fps, %.1f s", src.name, info.w, info.h, info.fps, info.dur)
 
     # zakres czasu
     kul = cfg["kulminacje"]
-    start, end = args.start or 0.0, args.koniec or info.dur
-    if args.dlugosc and args.start is None and args.koniec is None and info.audio:
-        full = find_peaks(loudness_curve(src, 0, info.dur), kul)
-        if full:
-            top = max(full, key=lambda p: p[1])[0]
-            end = min(info.dur, top + 1.5)
-            start = max(0.0, end - args.dlugosc)
-            end = min(info.dur, start + args.dlugosc)
-            log.info("Automatyczne cięcie wokół najgłośniejszego momentu: %.1f–%.1f s", start, end)
+    start = z_.start if z_.start is not None else 0.0
+    end = z_.koniec if z_.koniec is not None else info.dur
+    if z_.dlugosc and z_.start is None and z_.koniec is None:
+        if info.audio:
+            start, end = choose_window(loudness_curve(src, 0, info.dur), info.dur, z_.dlugosc, kul)
+            log.info("Automatyczne cięcie (najwięcej głośnych momentów): %.1f–%.1f s", start, end)
         else:
-            end = min(info.dur, args.dlugosc)
+            end = min(info.dur, z_.dlugosc)
+    end = min(end, info.dur)
+    if end - start < 1:
+        raise ValueError(f"Za krótki zakres: {start:.1f}–{end:.1f} s")
     dur = end - start
 
     peaks = find_peaks(loudness_curve(src, start, end), kul) if info.audio else []
@@ -336,69 +408,154 @@ def build(args: argparse.Namespace) -> Path:
     zg = f"1+{kul['zoom_gry'] - 1:.3f}*({envelope(game_peaks, kul)})"
 
     work = Path(tempfile.mkdtemp(prefix="montaz_"))
-    inputs = ["-ss", f"{start}", "-to", f"{end}", "-i", str(src.resolve())]
-    fc = [
-        f"[0:v]split=2[k][g]",
-        f"[k]crop={cw}:{ch}:{int(cx)}:{int(cy)},scale={OW}:{TOPH},"
-        f"zoompan=z='{zf}':d=1:s={OW}x{TOPH}:fps={fps}:"
-        f"x='max(0,min(iw-iw/zoom,{fxo:.1f}-iw/zoom/2))':y='max(0,min(ih-ih/zoom,{fyo:.1f}-ih/zoom/2))'[top]",
-        f"[g]crop={gw}:{gch}:{int(gx)}:{int(gy)},scale={OW}:{BOTH},"
-        f"zoompan=z='{zg}':d=1:s={OW}x{BOTH}:fps={fps}:x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2'[bot]",
-        "[top][bot]vstack=inputs=2,setsar=1[v0]",
-    ]
-    last = "v0"
-    idx = 1
+    try:
+        inputs = ["-ss", f"{start}", "-to", f"{end}", "-i", str(src.resolve())]
+        fc = [
+            f"[0:v]split=2[k][g]",
+            f"[k]crop={cw}:{ch}:{int(cx)}:{int(cy)},scale={OW}:{TOPH},"
+            f"zoompan=z='{zf}':d=1:s={OW}x{TOPH}:fps={fps}:"
+            f"x='max(0,min(iw-iw/zoom,{fxo:.1f}-iw/zoom/2))':y='max(0,min(ih-ih/zoom,{fyo:.1f}-ih/zoom/2))'[top]",
+            f"[g]crop={gw}:{gch}:{int(gx)}:{int(gy)},scale={OW}:{BOTH},"
+            f"zoompan=z='{zg}':d=1:s={OW}x{BOTH}:fps={fps}:x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2'[bot]",
+            "[top][bot]vstack=inputs=2,setsar=1[v0]",
+        ]
+        last = "v0"
+        idx = 1
 
-    if args.hook:
-        hook_png = work / "hook.png"
-        _, hh = render_hook(args.hook, cfg["hook"], OW, hook_png)
-        t = cfg["hook"]["czas_s"]
-        inputs += ["-loop", "1", "-t", f"{t}", "-i", str(hook_png)]
-        fc.append(f"[{idx}:v]format=rgba,fade=out:st={t - 0.15:.2f}:d=0.15:alpha=1[hk]")
-        fc.append(f"[{last}][hk]overlay=x=0:y={max(0, TOPH - hh // 2)}:eof_action=pass[v1]")
-        last, idx = "v1", idx + 1
+        if z_.hook:
+            hook_png = work / "hook.png"
+            _, hh = render_hook(z_.hook, cfg["hook"], OW, hook_png)
+            t = cfg["hook"]["czas_s"]
+            inputs += ["-loop", "1", "-t", f"{t}", "-i", str(hook_png)]
+            fc.append(f"[{idx}:v]format=rgba,fade=out:st={t - 0.15:.2f}:d=0.15:alpha=1[hk]")
+            fc.append(f"[{last}][hk]overlay=x=0:y={max(0, TOPH - hh // 2)}:eof_action=pass[v1]")
+            last, idx = "v1", idx + 1
 
-    if args.napisy:
-        font_path = pick_font(cfg["hook"]["czcionki"])
-        shutil.copy(font_path, work / Path(font_path).name)
-        font_name = ImageFont.truetype(font_path, 20).getname()[0]
-        ass = make_subtitles(src, start, end, font_name, OW, OH, TOPH, work, args.model,
-                             cenzura=not args.bez_cenzury)
-        if ass:
-            fc.append(f"[{last}]subtitles=napisy.ass:fontsdir=.[v2]")
-            last = "v2"
+        if z_.napisy:
+            words = transcribe_file(src, z_.model, cache_dir_for(src))
+            if words:
+                font_path = pick_font(cfg["hook"]["czcionki"])
+                shutil.copy(font_path, work / Path(font_path).name)
+                font_name = ImageFont.truetype(font_path, 20).getname()[0]
+                ass = make_subtitles(words, start, end, font_name, OW, OH, TOPH, work, cenzura=z_.cenzura)
+                if ass:
+                    fc.append(f"[{last}]subtitles=napisy.ass:fontsdir=.[v2]")
+                    last = "v2"
 
-    fc.append(f"[{last}]format=yuv420p[vout]")
+        fc.append(f"[{last}]format=yuv420p[vout]")
 
-    audio_map = []
-    if info.audio:
-        a_last = "0:a"
-        if args.efekt and peaks:
-            inputs += ["-i", str(Path(args.efekt).resolve())]
-            n = len(peaks)
-            fc.append(f"[{idx}:a]asplit={n}" + "".join(f"[e{i}]" for i in range(n)))
-            for i, (t, _) in enumerate(peaks):
-                ms = int(max(0, t - 0.05) * 1000)
-                fc.append(f"[e{i}]adelay={ms}|{ms},volume={cfg['dzwiek']['efekt_glosnosc']}[d{i}]")
-            fc.append(f"[0:a]" + "".join(f"[d{i}]" for i in range(n)) +
-                      f"amix=inputs={n + 1}:normalize=0:duration=first[amx]")
-            a_last, idx = "amx", idx + 1
-        fc.append(f"[{a_last}]loudnorm=I={cfg['dzwiek']['glosnosc_LUFS']}:TP=-1:LRA=11,"
-                  f"aresample=48000[aout]")
-        audio_map = ["-map", "[aout]", "-c:a", "aac", "-b:a", "192k"]
+        audio_map = []
+        if info.audio:
+            a_last = "0:a"
+            if z_.efekt and peaks:
+                inputs += ["-i", str(Path(z_.efekt).resolve())]
+                n = len(peaks)
+                fc.append(f"[{idx}:a]asplit={n}" + "".join(f"[e{i}]" for i in range(n)))
+                for i, (t, _) in enumerate(peaks):
+                    ms = int(max(0, t - 0.05) * 1000)
+                    fc.append(f"[e{i}]adelay={ms}|{ms},volume={cfg['dzwiek']['efekt_glosnosc']}[d{i}]")
+                fc.append(f"[0:a]" + "".join(f"[d{i}]" for i in range(n)) +
+                          f"amix=inputs={n + 1}:normalize=0:duration=first[amx]")
+                a_last, idx = "amx", idx + 1
+            fc.append(f"[{a_last}]loudnorm=I={cfg['dzwiek']['glosnosc_LUFS']}:TP=-1:LRA=11,"
+                      f"aresample=48000[aout]")
+            audio_map = ["-map", "[aout]", "-c:a", "aac", "-b:a", "192k"]
 
-    graph = ";".join(fc)
-    (work / "filtry.txt").write_text(graph, encoding="utf-8")  # kopia do diagnostyki
-    out = Path(args.wyjscie) if args.wyjscie else src.with_name(src.stem + "_slawa.mp4")
-    cmd = ["ffmpeg", "-hide_banner", "-y", *inputs, "-filter_complex", graph,
-           "-map", "[vout]", *audio_map, "-t", f"{dur:.3f}",
-           "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-r", fps,
-           "-movflags", "+faststart", str(out.resolve())]
-    log.info("Renderuję %.1f s klipu...", dur)
-    run(cmd, cwd=work)
-    shutil.rmtree(work, ignore_errors=True)
+        graph = ";".join(fc)
+        (work / "filtry.txt").write_text(graph, encoding="utf-8")  # kopia do diagnostyki
+        out = z_.out
+        out.parent.mkdir(parents=True, exist_ok=True)
+        cmd = ["ffmpeg", "-hide_banner", "-y", *inputs, "-filter_complex", graph,
+               "-map", "[vout]", *audio_map, "-t", f"{dur:.3f}",
+               "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-r", fps,
+               "-movflags", "+faststart", str(out.resolve())]
+        log.info("Renderuję %.1f s (%.1f–%.1f s źródła)...", dur, start, end)
+        run(cmd, cwd=work)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
     log.info("Gotowe: %s", out)
     return out
+
+
+# ---------- tryb folderu: analiza i plan ----------
+
+WIDEO = {".mp4", ".mov", ".mkv"}
+PLAN_POLA = ["plik", "dlugosc_zrodla_s", "start", "koniec", "hook", "napisy", "status", "kulminacje_s", "tekst_fragmentu"]
+
+
+def videos_in(folder: Path) -> list[Path]:
+    return sorted(p for p in folder.iterdir()
+                  if p.is_file() and p.suffix.lower() in WIDEO and not p.stem.endswith("_slawa"))
+
+
+def read_plan(path: Path) -> list[dict]:
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        return list(csv.DictReader(f, delimiter=";"))
+
+
+def write_plan(path: Path, rows: list[dict]) -> None:
+    tmp = path.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=PLAN_POLA, delimiter=";", extrasaction="ignore")
+        w.writeheader()
+        w.writerows(rows)
+    tmp.replace(path)  # zapis atomowy: przerwanie nie zostawi połowy pliku
+
+
+def analyze_folder(folder: Path, cfg: dict, length: float, model: str, transkrypcja: bool) -> Path:
+    plan_path = folder / "slawa_plan.csv"
+    rows = read_plan(plan_path) if plan_path.exists() else []
+    known = {r["plik"] for r in rows}
+    files = [p for p in videos_in(folder) if p.name not in known]
+    log.info("Folder: %s. Nowych klipów do analizy: %d (już w planie: %d).", folder, len(files), len(known))
+    for n, src in enumerate(files, 1):
+        log.info("[%d/%d] %s", n, len(files), src.name)
+        try:
+            info = probe(src)
+            curve = loudness_curve(src, 0, info.dur) if info.audio else []
+            start, end = choose_window(curve, info.dur, length, cfg["kulminacje"]) if curve else (0.0, min(info.dur, length))
+            peaks = [t for t, _ in find_peaks(curve, cfg["kulminacje"])] if curve else []
+            tekst = ""
+            if transkrypcja:
+                words = transcribe_file(src, model, cache_dir_for(src)) or []
+                tekst = " ".join(w["word"] for w in words if start <= w["start"] <= end)
+            rows.append({
+                "plik": src.name, "dlugosc_zrodla_s": f"{info.dur:.1f}", "start": f"{start:.1f}",
+                "koniec": f"{end:.1f}", "hook": "", "napisy": "tak" if transkrypcja else "nie",
+                "status": "do_zrobienia", "kulminacje_s": " ".join(f"{t:.1f}" for t in peaks),
+                "tekst_fragmentu": tekst[:300],
+            })
+        except (RuntimeError, ValueError, OSError) as e:
+            log.exception("Analiza nieudana: %s", src.name)
+            rows.append({"plik": src.name, "status": f"blad_analizy: {e}"[:120]})
+        write_plan(plan_path, rows)  # po każdym klipie, żeby przerwanie nie gubiło pracy
+    log.info("Plan zapisany: %s", plan_path)
+    return plan_path
+
+
+def render_plan(plan_path: Path, cfg: dict, model: str, cenzura: bool, efekt: str | None) -> None:
+    rows = read_plan(plan_path)
+    folder = plan_path.parent
+    todo = [r for r in rows if r.get("status", "") in ("do_zrobienia", "blad")]
+    log.info("Plan: %d klipów do montażu (pomijam status 'gotowe' i 'pomin').", len(todo))
+    for n, r in enumerate(todo, 1):
+        src = folder / r["plik"]
+        log.info("[%d/%d] %s", n, len(todo), r["plik"])
+        try:
+            zl = Zlecenie(
+                src=src, out=folder / "gotowe" / f"{src.stem}_slawa.mp4",
+                hook=(r.get("hook") or "").strip() or None,
+                start=float(r["start"].replace(",", ".")), koniec=float(r["koniec"].replace(",", ".")),
+                napisy=(r.get("napisy", "").strip().lower() == "tak"), cenzura=cenzura, model=model, efekt=efekt,
+            )
+            build(zl, cfg)
+            r["status"] = "gotowe"
+        except (RuntimeError, ValueError, OSError, KeyError) as e:
+            log.exception("Montaż nieudany: %s", r["plik"])
+            r["status"] = "blad"
+            print(f"! {r['plik']}: {e}")
+        write_plan(plan_path, rows)  # status po każdym klipie: po przerwaniu wznawia od miejsca błędu
+    log.info("Koniec. Gotowe klipy są w: %s", folder / "gotowe")
 
 
 def main() -> None:
@@ -406,22 +563,38 @@ def main() -> None:
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
         sys.exit("Brak ffmpeg. Zainstaluj go (Windows: winget install ffmpeg) i uruchom ponownie terminal.")
     p = argparse.ArgumentParser(description="Bot montażowy Sławy: klip ze streamu → klip na TikToka.")
-    p.add_argument("wejscie", help="pionowy klip: kamerka u góry, gra na dole")
+    p.add_argument("wejscie", nargs="?", help="plik klipu albo folder (z --analiza)")
     p.add_argument("--hook", help='tekst na start, np. "Ale mi *PRZYKRO*" (gwiazdki = kolor akcentu)')
-    p.add_argument("--dlugosc", type=float, help="docelowa długość w s; tnie wokół najgłośniejszego momentu")
+    p.add_argument("--dlugosc", type=float, help="docelowa długość w s; wybiera fragment z najwięcej kulminacjami")
     p.add_argument("--start", type=float, help="ręczny początek (s)")
     p.add_argument("--koniec", type=float, help="ręczny koniec (s)")
     p.add_argument("--efekt", help="plik dźwiękowy (np. boom.wav) dodawany na kulminacjach")
     p.add_argument("--napisy", action="store_true", help="napisy z mowy (wymaga faster-whisper)")
     p.add_argument("--bez-cenzury", action="store_true", help="nie maskuj przekleństw w napisach")
-    p.add_argument("--model", default="small", help="model Whisper do napisów (tiny/base/small/medium)")
+    p.add_argument("--model", default="small", help="model Whisper (tiny/base/small/medium)")
     p.add_argument("--uklad", default=str(BASE_DIR / "uklad_pysiex.yaml"), help="plik z układem kadru")
     p.add_argument("--wyjscie", help="plik wynikowy (domyślnie <nazwa>_slawa.mp4 obok źródła)")
+    p.add_argument("--analiza", action="store_true", help="folder: analiza wszystkich klipów i plan slawa_plan.csv")
+    p.add_argument("--bez-transkrypcji", action="store_true", help="przy --analiza pomiń Whisper (szybciej)")
+    p.add_argument("--plan", help="montaż wszystkich klipów z pliku slawa_plan.csv")
     args = p.parse_args()
-    if not Path(args.wejscie).is_file():
-        sys.exit(f"Nie ma pliku: {args.wejscie}")
     try:
-        build(args)
+        cfg = yaml.safe_load(Path(args.uklad).read_text(encoding="utf-8"))
+        if args.plan:
+            render_plan(Path(args.plan), cfg, args.model, not args.bez_cenzury, args.efekt)
+        elif args.analiza:
+            folder = Path(args.wejscie or "")
+            if not folder.is_dir():
+                sys.exit(f"Nie ma folderu: {folder}")
+            analyze_folder(folder, cfg, args.dlugosc or 22, args.model, not args.bez_transkrypcji)
+        else:
+            if not args.wejscie or not Path(args.wejscie).is_file():
+                sys.exit(f"Nie ma pliku: {args.wejscie}")
+            src = Path(args.wejscie)
+            out = Path(args.wyjscie) if args.wyjscie else src.with_name(src.stem + "_slawa.mp4")
+            build(Zlecenie(src=src, out=out, hook=args.hook, start=args.start, koniec=args.koniec,
+                           dlugosc=args.dlugosc, napisy=args.napisy, cenzura=not args.bez_cenzury,
+                           model=args.model, efekt=args.efekt), cfg)
     except (RuntimeError, KeyError, ValueError, OSError) as e:
         log.exception("Montaż przerwany")
         sys.exit(f"Błąd: {e}")
