@@ -11,7 +11,7 @@ Nie wpisuj tu haseł ani danych logowania.
 - Instagram: @pysiex_
 - O czym jest kanał (nisza, format): streamy League of Legends na TikTok LIVE (od 2 września 2026) oraz klipy ze streamów w pionie: kamerka u góry, gra na dole. Pojedyncze klipy z gier horrorowych i memy.
 - Czy pokazuję twarz: tak (kamerka).
-- Na nakładce widać logo Twitcha z nazwą Pysiex_ (do potwierdzenia: czy streamuję też na Twitchu).
+- Streamuję też na Twitchu (Pysiex_, podane w bio na Instagramie). W zakładkach przeglądarki są Restream, StreamElements i Tipply, więc prawdopodobnie streamuję na kilka platform naraz (do potwierdzenia).
 - Dla kogo (widz docelowy):
 
 ## Cel na najbliższe 3 miesiące
@@ -30,7 +30,7 @@ Nie wpisuj tu haseł ani danych logowania.
 - TikTok LIVE (8.08–6.10.2026, czyli 60 dni): 13,5 tys. wyświetleń, 19 h 8 min na żywo, 1902 diamenty, 114,5 tys. polubień.
   - Źródła ruchu LIVE: rekomendacje LIVE 71%, obserwowani 7%, inne 20%.
   - Widzowie: Polska 94%; wiek 25–34: 42%, 18–24: 25%, 35–44: 16%; mężczyźni 51%, kobiety 49%.
-- Instagram: obserwujący / mediana wyświetleń ostatnich 10 rolek:
+- Instagram (2026-10-07): 50 postów, 4 obserwujących, 3 obserwowanych. Bio: „Gram, bawię się i streamuję 🎮 / Wpadaj, zostaw follow – będzie spoko! 👋 / Twitch: Pysiex_”. Posty to te same klipy co na TikToku. Wyświetleń rolek jeszcze nie znam.
 - Liczba obserwujących na TikToku:
 
 ## Ton i styl
