@@ -1,0 +1,65 @@
+# Przepis montażowy dla klipów @pysiex_ (konfiguracja przyszłego bota montażowego)
+# Źródło: analiza 6 filmów wzorcowych (2026-10-07) ffmpeg-iem: klatki co 0,5–1 s,
+# wykrywanie cięć, głośność (LUFS) sekunda po sekundzie.
+# ZMIERZONE = odczytane z plików; SZACOWANE = ocena z klatek albo decyzja projektowa.
+
+dlugosc_s:
+  pojedynczy_moment: [10, 20]   # wzór A: 10 s treści (ZMIERZONE)
+  historia: [30, 60]            # wzór B: 62 s, budowanie napięcia i wypłata (ZMIERZONE)
+  uwaga: "W Twoich danych klipy 20–25 s mają medianę 1161 wyświetleń; nie skracaj na siłę."
+
+uklad_kadru:
+  kamerka_gora_proc_wysokosci: 42   # wzory A i B: ok. 42% (SZACOWANE z klatek)
+  gra_dol_proc_wysokosci: 58
+  zmiany_ukladu:
+    - "akcja: gra na pełny ekran albo kamerka jako małe okienko w rogu (wzór B, 15–38 s)"
+    - "reakcja: kamerka powiększona do 120–140% na 0,5–1 s (wzór A, 6,5 s i 8 s)"
+    - "wypłata: kamerka duża + tekst z wynikiem (wzór B, 39–41 s)"
+  stale_nakladki_streamu: "ukryć albo przyciąć (napis 'Siemanko!', neon, etykieta Twitcha), bo konkurują z hookiem"
+
+hook:
+  start: "od razu akcja; cięcie najwyżej 0,5 s przed kulminacją"
+  tekst:
+    slowa: [2, 5]               # wzory: 'I FEEL LIKE A MONSTER', 'RANK 1 KR & EUW', 'ZED IS BAIT' (ZMIERZONE)
+    czas_wyswietlania_s: [1, 2] # A: 0–1,5 s; B: 0–1 s; E: 1–3 s (ZMIERZONE, rozdzielczość 0,5 s)
+    pozycja: "na styku kamerki i gry albo na środku"
+    styl: "gruby, biały, 1 słowo kluczowe w kolorze (A: czerwony), obrys lub cień"
+    zasada: "tekst musi być prawdziwy; mówi, o co toczy się gra"
+
+tempo:
+  zdarzenie_wizualne_co_s: [1.0, 1.5]  # wzór A: ok. 7 zdarzeń w 10 s (ZMIERZONE)
+  rodzaje_zdarzen:
+    - "zoom 110% → 130% na grę przy zabójstwie lub liczbach obrażeń (A: 5,5 s)"
+    - "powiększenie twarzy przy krzyku lub reakcji (A: 6,5 s, 8 s)"
+    - "jedno słowo dużym tekstem w kulminacji: 'BOOOM', 'ROARRR' (A)"
+    - "mem lub obrazek na 0,5–1 s (A: 2,5 s, 7,5 s); opcjonalnie, ryzyko praw autorskich"
+    - "przejście efektem (B: kontrastowy filtr 13–14 s; A: błysk 9 s)"
+
+dzwiek:
+  dynamika: "cicha podstawa, głośne kulminacje"
+  zmierzone:
+    wzor_A: "podstawa ok. -18 LUFS, szczyty -7..-9 LUFS w reakcjach (różnica ok. 10 LU)"
+    wzor_B: "podstawa ok. -26 LUFS, wypłata -7 LUFS (różnica ok. 19 LU, 39–41 s)"
+    wzory_C_E: "muzyka przez cały film, równo -10 / -17 LUFS (montaże bez kamerki)"
+  efekty: "krótki efekt (boom, whoosh) tylko na kulminacjach"
+  mowa: "zostaje, bo reakcja twórcy to atut; napisy do mowy"
+
+napisy:
+  pozycja: "pod kamerką lub nad dolnym paskiem UI gry"
+  slow_na_raz: [1, 3]           # SZACOWANE (standard krótkich form; wzory mają mało mowy z napisami)
+  styl: "biały, gruby, czarny obrys"
+
+struktura_historii:              # wzór B (ZMIERZONE)
+  - "0–1 s: teza ('RANK 1 KR & EUW')"
+  - "2–12 s: kontekst (czat: ktoś dogaduje lub pyta o rangę), kamerka u góry"
+  - "13–14 s: przejście efektem"
+  - "15–38 s: akcja na pełnym ekranie, licznik w rogu"
+  - "39–41 s: wypłata: wynik '106-22 W/L' + reakcja + skok głośności"
+  - "42–57 s: dalsza akcja; koniec z logo (przy Twoich klipach do pominięcia)"
+
+zakonczenie: "cięcie 0,5–1 s po wypłacie; bez outra"
+
+czego_nie_przenosic:
+  - "sceny z filmów i seriali (wzór F: Breaking Bad), bo grożą zgłoszeniem praw autorskich"
+  - "gra w poziomie z czarnymi pasami (wzór E), bo marnuje ekran"
+  - "montaż samej gry z muzyką bez twarzy (wzory C, E); Twoim atutem jest reakcja"
