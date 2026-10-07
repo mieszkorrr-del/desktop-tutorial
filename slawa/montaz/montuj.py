@@ -338,10 +338,10 @@ def build(args: argparse.Namespace) -> Path:
                   f"aresample=48000[aout]")
         audio_map = ["-map", "[aout]", "-c:a", "aac", "-b:a", "192k"]
 
-    script = work / "filtry.txt"
-    script.write_text(";\n".join(fc), encoding="utf-8")
+    graph = ";".join(fc)
+    (work / "filtry.txt").write_text(graph, encoding="utf-8")  # kopia do diagnostyki
     out = Path(args.wyjscie) if args.wyjscie else src.with_name(src.stem + "_slawa.mp4")
-    cmd = ["ffmpeg", "-hide_banner", "-y", *inputs, "-filter_complex_script", str(script),
+    cmd = ["ffmpeg", "-hide_banner", "-y", *inputs, "-filter_complex", graph,
            "-map", "[vout]", *audio_map, "-t", f"{dur:.3f}",
            "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-r", fps,
            "-movflags", "+faststart", str(out.resolve())]
