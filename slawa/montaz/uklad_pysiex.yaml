@@ -1,0 +1,39 @@
+# Układ kadru dla klipów @pysiex_ (pionowy klip: kamerka u góry, gra na dole).
+# Wartości to ułamki wymiarów klipu źródłowego, więc działają przy każdej rozdzielczości
+# o tych samych proporcjach. Zmierzone na klipie „ale mi przykro_1.mp4” (882x1568), 2026-10-07.
+
+zrodlo:
+  granica_kamera_gra: 0.328   # kamerka: 0–32,8% wysokości, gra: reszta
+  twarz_x: 0.66               # środek twarzy (ułamek szerokości)
+  twarz_y: 0.17               # środek twarzy (ułamek wysokości całego klipu)
+
+wyjscie:
+  szerokosc: 1080
+  wysokosc: 1920
+  kamerka_proc: 0.40          # wzory A i B mają ok. 42%; u Ciebie było ok. 33%
+  gra_przyciecie: gora        # 'gora' obcina górę mapy, 'srodek' obcina po równo; dół z paskiem umiejętności zostaje
+
+hook:
+  czas_s: 1.8
+  czcionki:                   # pierwsza istniejąca zostanie użyta (muszą mieć polskie znaki)
+    - "C:/Windows/Fonts/impact.ttf"
+    - "C:/Windows/Fonts/arialbd.ttf"
+    - "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+  rozmiar_proc_szerokosci: 0.11
+  kolor: "#FFFFFF"
+  kolor_akcentu: "#FF2D2D"    # słowa w *gwiazdkach* dostają ten kolor
+  obrys_px: 8
+
+kulminacje:
+  prog_LU_ponad_mediane: 6    # jak dużo głośniej niż typowy poziom klipu musi być moment
+  min_odstep_s: 2.5
+  max_liczba: 4
+  zoom_gry: 1.20              # „punch” na grę
+  zoom_twarzy: 1.45           # powiększenie twarzy w najgłośniejszym momencie
+  narastanie_s: 0.10
+  trzymanie_s: 0.50
+  opadanie_s: 0.25
+
+dzwiek:
+  glosnosc_LUFS: -14          # wyrównanie głośności; wartość docelową sprawdź z wytycznymi platformy
+  efekt_glosnosc: 0.8         # głośność opcjonalnego efektu (--efekt plik.wav)

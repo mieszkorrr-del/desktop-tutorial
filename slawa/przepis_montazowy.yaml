@@ -15,7 +15,7 @@ uklad_kadru:
     - "akcja: gra na pełny ekran albo kamerka jako małe okienko w rogu (wzór B, 15–38 s)"
     - "reakcja: kamerka powiększona do 120–140% na 0,5–1 s (wzór A, 6,5 s i 8 s)"
     - "wypłata: kamerka duża + tekst z wynikiem (wzór B, 39–41 s)"
-  stale_nakladki_streamu: "ukryć albo przyciąć (napis 'Siemanko!', neon, etykieta Twitcha), bo konkurują z hookiem"
+  dekoracje_w_pokoju: "tablica LED z nickami i neon Pysiex to fizyczne elementy pokoju, nie nakładki; zostają w kadrze"
 
 hook:
   start: "od razu akcja; cięcie najwyżej 0,5 s przed kulminacją"
