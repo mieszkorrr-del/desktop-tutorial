@@ -1,0 +1,7 @@
+2026-10-07 03:42:39,723 INFO Czekam na grę (Ctrl+C kończy). Zapis: /tmp/claude-0/-home-user-desktop-tutorial/5c5593f3-40b6-5547-9fb5-5c413ee0c43a/scratchpad/zd.csv
+2026-10-07 03:42:39,780 INFO Gra wykryta, gracz: harry portierr
+2026-10-07 03:42:39,780 INFO GameStart -→-
+2026-10-07 03:42:40,783 INFO ChampionKill harry portierr→wrog1 (TY)
+2026-10-07 03:42:41,784 INFO Multikill harry portierr→- (TY)
+2026-10-07 03:42:43,789 INFO BaronKill wrog2→-
+2026-10-07 03:42:46,793 INFO Koniec gry (API niedostępne). Czekam na następną.

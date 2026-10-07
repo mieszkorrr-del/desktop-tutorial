@@ -38,6 +38,9 @@ kulminacje:
   trzymanie_s: 0.50
   opadanie_s: 0.25
 
+napisy:
+  kolor_aktywnego_slowa: "#FFE600"   # aktualnie wypowiadane słowo; pusta wartość = bez podświetlenia
+
 dzwiek:
   glosnosc_LUFS: -14          # wyrównanie głośności; wartość docelową sprawdź z wytycznymi platformy
   efekt_glosnosc: 0.8         # głośność opcjonalnego efektu (--efekt plik.wav)

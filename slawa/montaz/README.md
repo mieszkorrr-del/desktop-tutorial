@@ -36,7 +36,7 @@ Wynik trafia obok źródła jako `<nazwa>_slawa.mp4`. Log techniczny zapisuje si
 | `--dlugosc N` | wybiera N-sekundowy fragment z największą liczbą głośnych momentów |
 | `--start` / `--koniec` | ręczne cięcie (sekundy) |
 | `--efekt plik.wav` | efekt dźwiękowy na każdej kulminacji (użyj efektu, do którego masz prawa) |
-| `--napisy` | napisy z mowy, po polsku, 1–3 słowa naraz; przekleństwa maskowane (np. K***A) |
+| `--napisy` | napisy z mowy, po polsku, 1–3 słowa naraz, aktualne słowo na żółto; przekleństwa maskowane (np. K***A) |
 | `--bez-cenzury` | napisy bez maskowania przekleństw |
 | `--model medium` | dokładniejsza, ale wolniejsza transkrypcja (domyślnie `small`) |
 | `--uklad` | inny plik układu (inna kamera, inny format) |
@@ -58,6 +58,22 @@ Trzy kroki:
    Gotowe klipy trafiają do podfolderu `gotowe`. Po każdym klipie bot zapisuje w planie status (`gotowe` albo `blad`), więc po przerwaniu wystarczy uruchomić to samo polecenie, a bot dokończy resztę. Klipy z `blad` próbuje ponownie.
 
 Analizę można powtórzyć po dodaniu nowych plików: bot dopisze do planu tylko nowe klipy, a transkrypcji nie robi drugi raz.
+
+## Logger zdarzeń z gry (najmocniejszy sygnał dla VOD)
+
+Przed streamem uruchom w osobnym oknie PowerShell i zostaw włączony:
+```
+python lol_logger.py --plik "C:\stream\zdarzenia.csv"
+```
+W trakcie każdej gry co 2 s czyta lokalne API klienta LoL (tylko odczyt, adres 127.0.0.1:2999) i zapisuje Twoje zabójstwa, śmierci, multikille, smoki, barony i kradzieże z godziną zegarową. Potem dodaj do wyszukiwarki momentów:
+```
+--zdarzenia-lol "C:\stream\zdarzenia.csv" --poczatek-nagrania "2026-10-07 18:02:15"
+```
+`--poczatek-nagrania` to godzina startu nagrania (startu streamu), widoczna na Twitchu przy nagraniu. Logger przetestowałem na symulowanym API; na prawdziwej grze do sprawdzenia jest dopasowanie Twojej nazwy (Riot ID).
+
+## Dziennik klipów
+
+Każdy zmontowany klip dopisuje swoje cechy (długość, hook, liczba słów hooka, napisy, kulminacje) do `slawa_dziennik.csv` obok gotowych plików. Po 7 dniach od publikacji uzupełnij kolumny ze statystykami z TikTok Studio. Po kilkunastu klipach będzie widać, które cechy idą w parze z lepszą retencją. Porównuj grupy klipów, a nie pojedynczy wiral.
 
 ## Cały stream (VOD z Twitcha) → najlepsze momenty
 

@@ -2,6 +2,7 @@
 """Wyszukiwarka momentów Sławy: z wielogodzinnego nagrania streamu wycina kandydatów na klipy.
 
 Sygnały:
+- zdarzenia z gry LoL (opcjonalnie, z lol_logger.py): Twoje zabójstwa, multikille, kradzieże smoków i baronów,
 - głośność (krzyki, wybuchy, nagłe reakcje), liczona z całego dźwięku nagrania,
 - czat z Twitcha (opcjonalnie): nagłe wybuchy liczby wiadomości i śmiechu (KEKW, XD, LUL...).
   Czat reaguje z opóźnieniem, więc jego sygnał jest przesuwany wstecz (--opoznienie-czatu).
@@ -25,6 +26,7 @@ import statistics
 import subprocess
 import sys
 from collections import Counter
+from datetime import datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -102,6 +104,43 @@ def load_chat(path: Path) -> list[tuple[float, str]]:
     return msgs
 
 
+WAGI_LOL = {"ChampionKill": 1.0, "Multikill": 0.0, "Ace": 2.0, "FirstBlood": 2.0,
+            "DragonKill": 2.0, "BaronKill": 3.0, "HeraldKill": 2.0, "InhibKilled": 1.0, "TurretKilled": 0.5}
+
+
+def load_lol_events(path: Path, vod_start: datetime, n: int) -> list[float]:
+    """Wczytuje CSV z lol_logger.py i zwraca punkty zdarzeń dla każdej sekundy nagrania."""
+    pts = [0.0] * n
+    used = 0
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        for r in csv.DictReader(f, delimiter=";"):
+            try:
+                t = (datetime.fromisoformat(r["czas"]) - vod_start).total_seconds()
+            except (KeyError, ValueError):
+                continue
+            i = int(t)
+            if not 0 <= i < n:
+                continue
+            ev, ja = r.get("zdarzenie", ""), r.get("ja") == "tak"
+            w = WAGI_LOL.get(ev, 0.0)
+            if ev == "ChampionKill" and ja:
+                w = 3.0 if r.get("zabojca") and r.get("zabojca") not in r.get("asysty", "") else 2.0
+            if ev == "Multikill" and ja:
+                try:
+                    w = 3.0 * int(r.get("seria") or 2)
+                except ValueError:
+                    w = 6.0
+            if str(r.get("kradziez", "")).lower() == "true":
+                w += 5.0
+            if not ja and ev in ("ChampionKill", "Multikill"):
+                w *= 0.3  # cudza walka mniej ważna niż Twoja
+            for j in range(max(0, i - 3), min(n, i + 2)):  # logger zapisuje do 2 s po fakcie
+                pts[j] = max(pts[j], w)
+            used += 1
+    log.info("Zdarzenia LoL w zakresie nagrania: %d.", used)
+    return pts
+
+
 def rolling_median(values: list[float], half: int) -> list[float]:
     """Mediana w oknie ±half (co 10 s dla szybkości przy wielu godzinach)."""
     n = len(values)
@@ -115,7 +154,7 @@ def rolling_median(values: list[float], half: int) -> list[float]:
 
 
 def score_timeline(loud: list[float], chat: list[tuple[float, str]] | None, delay: float,
-                   w_chat: float) -> tuple[list[float], list[float], list[float]]:
+                   w_chat: float, lol: list[float] | None = None) -> tuple[list[float], list[float], list[float]]:
     n = len(loud)
     base = rolling_median(loud, 300)  # typowy poziom w ±5 min (stream ma różne fazy)
     loud_ex = [max(0.0, l - b - 4.0) for l, b in zip(loud, base)]  # nadwyżka ponad typowy poziom
@@ -129,7 +168,8 @@ def score_timeline(loud: list[float], chat: list[tuple[float, str]] | None, dela
         win = [sum(per_sec[max(0, i - 5): i + 5]) for i in range(n)]  # wiadomości w oknie 10 s
         cbase = rolling_median(win, 300)
         chat_ex = [max(0.0, (w - b) / (b + 3.0)) for w, b in zip(win, cbase)]  # względny wybuch czatu
-    score = [l + w_chat * c * 6.0 for l, c in zip(loud_ex, chat_ex)]
+    lol = lol or [0.0] * n
+    score = [l + w_chat * c * 6.0 + 4.0 * e for l, c, e in zip(loud_ex, chat_ex, lol)]
     return score, loud_ex, chat_ex
 
 
@@ -139,9 +179,9 @@ def pick_moments(score: list[float], count: int, spacing: int) -> list[int]:
     order = sorted(range(len(sm)), key=lambda i: -sm[i])
     chosen: list[int] = []
     for i in order:
-        if sm[i] < 1.0 or len(chosen) >= count:  # poniżej 1 punktu to szum, nie moment
+        if len(chosen) >= count or sm[i] < 3.0:  # poniżej tego progu to szum, nie moment
             break
-        if all(abs(i - c) >= spacing for c in chosen):
+        if score[i] >= 1.0 and all(abs(i - c) >= spacing for c in chosen):
             chosen.append(i)
     return chosen
 
@@ -158,6 +198,8 @@ def main() -> None:
     p.add_argument("--po", type=int, default=15, help="sekund po kulminacji (domyślnie 15)")
     p.add_argument("--opoznienie-czatu", type=float, default=8.0, help="o ile s czat spóźnia się za akcją")
     p.add_argument("--waga-czatu", type=float, default=1.0, help="waga czatu względem głośności")
+    p.add_argument("--zdarzenia-lol", help="CSV z lol_logger.py (zabójstwa, multikille, smoki...)")
+    p.add_argument("--poczatek-nagrania", help='czas startu nagrania, np. "2026-10-07 18:02:15" (potrzebny z --zdarzenia-lol)')
     p.add_argument("--wyjscie", help="folder na fragmenty (domyślnie <nagranie>_momenty obok pliku)")
     args = p.parse_args()
 
@@ -169,7 +211,12 @@ def main() -> None:
         dur = duration(src)
         loud = loudness_per_second(src, dur)
         chat = load_chat(Path(args.czat)) if args.czat else None
-        score, loud_ex, chat_ex = score_timeline(loud, chat, args.opoznienie_czatu, args.waga_czatu)
+        lol = None
+        if args.zdarzenia_lol:
+            if not args.poczatek_nagrania:
+                sys.exit("Do --zdarzenia-lol podaj --poczatek-nagrania (godzina startu streamu/nagrania).")
+            lol = load_lol_events(Path(args.zdarzenia_lol), datetime.fromisoformat(args.poczatek_nagrania), len(loud))
+        score, loud_ex, chat_ex = score_timeline(loud, chat, args.opoznienie_czatu, args.waga_czatu, lol)
         peaks = pick_moments(score, args.ile, args.przed + args.po)
         if not peaks:
             sys.exit("Nie znalazłem wyraźnych momentów (nagranie bez skoków głośności i czatu?).")
@@ -192,7 +239,8 @@ def main() -> None:
                 sample = " | ".join(m for m, _ in Counter(okno).most_common(6))[:200]
             rows.append({"ranking": rank, "plik": name, "czas_w_nagraniu": hms(pk),
                          "kulminacja_w_pliku_s": pk - start, "punkty": round(score[pk], 1),
-                         "glosnosc": round(loud_ex[pk], 1), "czat": round(chat_ex[pk], 2), "probka_czatu": sample})
+                         "glosnosc": round(loud_ex[pk], 1), "czat": round(chat_ex[pk], 2),
+                         "lol": round(lol[pk], 1) if lol else 0, "probka_czatu": sample})
             log.info("[%d/%d] %s (punkty %.1f)", rank, len(peaks), name, score[pk])
         with open(out_dir / "momenty.csv", "w", encoding="utf-8-sig", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0].keys()), delimiter=";")

@@ -26,6 +26,7 @@ import statistics
 import subprocess
 import sys
 import tempfile
+import time
 import wave
 from dataclasses import dataclass
 from pathlib import Path
@@ -301,7 +302,7 @@ def transcribe_file(path: Path, model_size: str, cache_dir: Path) -> list[dict] 
 
 
 def make_subtitles(words_all: list[dict], start: float, end: float, font_name: str, ow: int, oh: int,
-                   top_h: int, workdir: Path, cenzura: bool = True) -> Path | None:
+                   top_h: int, workdir: Path, cenzura: bool = True, kolor_aktywny: str | None = "#FFE600") -> Path | None:
     words = [dict(w, start=w["start"] - start, end=w["end"] - start)
              for w in words_all if w["start"] >= start - 0.05 and w["end"] <= end + 0.05]
     if not words:
@@ -324,12 +325,25 @@ def make_subtitles(words_all: list[dict], start: float, end: float, font_name: s
         f"Style: Napis,{font_name},{int(ow * 0.075)},&H00FFFFFF,&H00000000,&H00000000,1,1,6,0,8,40,40,{margin}",
         "", "[Events]", "Format: Layer, Start, End, Style, Text",
     ]
+    def ass_color(hex_rgb: str) -> str:  # ASS zapisuje kolory jako BGR
+        h = hex_rgb.lstrip("#")
+        return f"&H{h[4:6]}{h[2:4]}{h[0:2]}&".upper()
+
     for ch in chunks:
         slowa = [w["word"] for w in ch]
         if cenzura:
             slowa = [cenzuruj(x) for x in slowa]
-        text = " ".join(slowa).upper()
-        lines.append(f"Dialogue: 0,{ass_time(ch[0]['start'])},{ass_time(ch[-1]['end'] + 0.05)},Napis,{text}")
+        slowa = [x.upper() for x in slowa]
+        if not kolor_aktywny:
+            lines.append(f"Dialogue: 0,{ass_time(ch[0]['start'])},{ass_time(ch[-1]['end'] + 0.05)},Napis,{' '.join(slowa)}")
+            continue
+        # osobne zdarzenie na każde słowo: aktywne słowo w kolorze, reszta frazy biała
+        for i, w in enumerate(ch):
+            t0 = w["start"]
+            t1 = ch[i + 1]["start"] if i + 1 < len(ch) else ch[-1]["end"] + 0.05
+            txt = " ".join(f"{{\\c{ass_color(kolor_aktywny)}}}{x}{{\\c&HFFFFFF&}}" if j == i else x
+                           for j, x in enumerate(slowa))
+            lines.append(f"Dialogue: 0,{ass_time(t0)},{ass_time(max(t1, t0 + 0.05))},Napis,{txt}")
     ass = workdir / "napisy.ass"
     ass.write_text("\n".join(lines), encoding="utf-8")
     log.info("Napisy: %d fragmentów.", len(chunks))
@@ -493,7 +507,8 @@ def build(z_: Zlecenie, cfg: dict) -> Path:
                 font_path = pick_font(cfg["hook"]["czcionki"])
                 shutil.copy(font_path, work / Path(font_path).name)
                 font_name = ImageFont.truetype(font_path, 20).getname()[0]
-                ass = make_subtitles(words, start, end, font_name, OW, OH, TOPH, work, cenzura=z_.cenzura)
+                ass = make_subtitles(words, start, end, font_name, OW, OH, TOPH, work, cenzura=z_.cenzura,
+                                     kolor_aktywny=cfg.get("napisy", {}).get("kolor_aktywnego_slowa", "#FFE600"))
                 if ass:
                     fc.append(f"[{last}]subtitles=napisy.ass:fontsdir=.[v2]")
                     last = "v2"
@@ -529,8 +544,35 @@ def build(z_: Zlecenie, cfg: dict) -> Path:
         run(cmd, cwd=work)
     finally:
         shutil.rmtree(work, ignore_errors=True)
+    log_features(z_, out, start, end, len(peaks), cfg, z_.hook and hook_duration(cfg["hook"], face_peak, dur))
     log.info("Gotowe: %s", out)
     return out
+
+
+DZIENNIK_POLA = ["data_renderu", "klip", "zrodlo", "start_s", "koniec_s", "dlugosc_s", "hook", "slowa_hooka",
+                 "hook_do_s", "napisy", "kulminacje", "kamerka_proc",
+                 # do uzupełnienia po 7 dniach z TikTok Studio:
+                 "data_publikacji", "wyswietlenia_7d", "sr_ogladania_s", "spadek_0_2s_pp", "pct_calosc", "nowi_obserwujacy"]
+
+
+def log_features(z_: "Zlecenie", out: Path, start: float, end: float, n_peaks: int, cfg: dict, hook_s) -> None:
+    """Dopisuje cechy klipu do slawa_dziennik.csv obok wyniku; po publikacji dopisz statystyki i porównuj."""
+    path = out.parent / "slawa_dziennik.csv"
+    new = not path.exists()
+    try:
+        with open(path, "a", encoding="utf-8-sig" if new else "utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=DZIENNIK_POLA, delimiter=";")
+            if new:
+                w.writeheader()
+            w.writerow({
+                "data_renderu": time.strftime("%Y-%m-%d %H:%M"), "klip": out.name, "zrodlo": z_.src.name,
+                "start_s": f"{start:.1f}", "koniec_s": f"{end:.1f}", "dlugosc_s": f"{end - start:.1f}",
+                "hook": z_.hook or "", "slowa_hooka": len(parse_accents(z_.hook)) if z_.hook else 0,
+                "hook_do_s": f"{hook_s:.1f}" if hook_s else "", "napisy": "tak" if z_.napisy else "nie",
+                "kulminacje": n_peaks, "kamerka_proc": cfg["wyjscie"]["kamerka_proc"],
+            })
+    except OSError:
+        log.warning("Nie udało się dopisać do dziennika %s", path)
 
 
 # ---------- tryb folderu: analiza i plan ----------

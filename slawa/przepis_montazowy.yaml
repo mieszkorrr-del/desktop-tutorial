@@ -88,3 +88,19 @@ research_2026_10_07:
     - "emoji w hooku (💀, ⚠️): obecna czcionka ich nie wyświetli"
     - "plansza z puentą na końcu, pętla, wtrącenie mema"
     - "usuwanie ciszy > 0,4 s: przy klipach z gry psułoby ciągłość akcji"
+
+# Research 2 (2026-10-07): nowe kanały z niszy PL (Twitch/LoL), 6 filmów po 14 klatek, bez dźwięku.
+research_2_2026_10_07:
+  najblizej_skali_pysiex:
+    - "@ttv_mikas_36 (534 obs.): 16,2k na stałej etykiecie-memie, z którą widz się utożsamia: 'Twój duo po 7 porażce z rzędu: (Jest czwarta rano)'"
+    - "@yett_oo (6,6 tys.): etykieta 'instant regret' od 0 s, cytat z czatu w napisach z podświetleniem"
+  formaty_lol_pl:
+    - "@kmntxd: ciekawostka/eksperyment ('Ile zarobisz Jaxem łowiąc 100 ryb'), hook-pytanie, liczby na ekranie"
+    - "@laboczek: seria w częściach z komentarzem; skok z ~2,5k do 100–237k"
+  wniosek_dla_hookow: "etykieta w 2. osobie, sytuacja do utożsamienia się ('Twój jungler…', 'Ty po 5 przegranej…') zamiast opisu tego, co robię"
+  nie_kopiowac: "@acabdosiek: komentarze wskazują na skrypty/cheaty (#orbwalker), ryzyko bana"
+  wdrozone: ["napisy z podświetleniem aktywnego słowa", "logger zdarzeń LoL + punktacja w znajdz_momenty", "dziennik cech klipów slawa_dziennik.csv"]
+  odrzucone_lub_pozniej:
+    - "wycinanie ciszy > 0,4 s: psuje ciągłość gry; ewentualnie tylko dla just chatting"
+    - "plansza z puentą, pętla SSIM, overlay czatu: następne kroki"
+    - "lokalny LLM (Ollama) do hooków: niepotrzebny, hooki pisze lokalny Claude z transkrypcji"
