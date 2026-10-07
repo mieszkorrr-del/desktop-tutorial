@@ -17,12 +17,14 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
 import re
 import shutil
 import statistics
 import subprocess
 import sys
 import tempfile
+import wave
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -108,11 +110,13 @@ def find_peaks(curve: list[tuple[float, float]], cfg: dict) -> list[tuple[float,
         window = [x for tt, x in curve[max(0, i - 5): i + 6]]
         if l >= max(window):
             cands.append((t, l))
+    span = curve[-1][0] - curve[0][0]
+    limit = max(1, math.ceil(span / 30 * cfg.get("max_na_30s", cfg.get("max_liczba", 4))))
     chosen: list[tuple[float, float]] = []
     for t, l in sorted(cands, key=lambda c: -c[1]):
         if all(abs(t - ct) >= cfg["min_odstep_s"] for ct, _ in chosen):
             chosen.append((t, l))
-        if len(chosen) >= cfg["max_liczba"]:
+        if len(chosen) >= limit:
             break
     log.info("Typowa głośność %.1f LUFS, próg %.1f, kulminacje: %s", base, thr,
              ", ".join(f"{t:.1f}s ({l:.0f})" for t, l in sorted(chosen)) or "brak")
@@ -135,22 +139,46 @@ def pick_font(paths: list[str]) -> str:
     raise RuntimeError("Nie znalazłem żadnej czcionki z listy 'hook.czcionki' w pliku układu.")
 
 
+def parse_accents(text: str) -> list[list[tuple[str, bool]]]:
+    """Dzieli tekst na słowa; każda '*' włącza albo wyłącza kolor akcentu (także na kilka słów)."""
+    words: list[list[tuple[str, bool]]] = []
+    cur: list[tuple[str, bool]] = []
+    buf, accent = "", False
+    for ch in text:
+        if ch == "*" or ch.isspace():
+            if buf:
+                cur.append((buf, accent))
+                buf = ""
+            if ch == "*":
+                accent = not accent
+            elif cur:
+                words.append(cur)
+                cur = []
+        else:
+            buf += ch
+    if buf:
+        cur.append((buf, accent))
+    if cur:
+        words.append(cur)
+    return words
+
+
 def render_hook(text: str, cfg: dict, width: int, out: Path) -> tuple[int, int]:
     font_path = pick_font(cfg["czcionki"])
     size = int(width * cfg["rozmiar_proc_szerokosci"])
     font = ImageFont.truetype(font_path, size)
     stroke = cfg["obrys_px"]
-    words = [(w.strip("*"), w.startswith("*") and w.endswith("*")) for w in text.split()]
+    words = parse_accents(text)
     space = font.getlength(" ")
     max_w = width * 0.92
     lines, cur, cur_w = [], [], 0.0
-    for word, accent in words:
-        ww = font.getlength(word)
+    for segs in words:
+        ww = sum(font.getlength(t) for t, _ in segs)
         if cur and cur_w + space + ww > max_w:
             lines.append((cur, cur_w))
             cur, cur_w = [], 0.0
         cur_w = cur_w + (space if cur else 0) + ww
-        cur.append((word, accent, ww))
+        cur.append((segs, ww))
     if cur:
         lines.append((cur, cur_w))
     asc, desc = font.getmetrics()
@@ -161,10 +189,12 @@ def render_hook(text: str, cfg: dict, width: int, out: Path) -> tuple[int, int]:
     y = stroke
     for line, lw in lines:
         x = (width - lw) / 2
-        for word, accent, ww in line:
-            d.text((x, y), word, font=font, fill=cfg["kolor_akcentu"] if accent else cfg["kolor"],
-                   stroke_width=stroke, stroke_fill="#000000")
-            x += ww + space
+        for segs, ww in line:
+            for t, accent in segs:
+                d.text((x, y), t, font=font, fill=cfg["kolor_akcentu"] if accent else cfg["kolor"],
+                       stroke_width=stroke, stroke_fill="#000000")
+                x += font.getlength(t)
+            x += space
         y += line_h
     img.save(out)
     log.info("Hook: „%s” (czcionka %s, %d linii)", text, Path(font_path).name, len(lines))
@@ -179,8 +209,20 @@ def ass_time(t: float) -> str:
     return f"{int(h)}:{int(m):02d}:{s:05.2f}"
 
 
+WULGARYZMY = re.compile(r"(kurw|chuj|huj|jeb|pierdol|pierdal|pizd|skurw|kutas|dziwk|cwel)", re.IGNORECASE)
+
+
+def cenzuruj(slowo: str) -> str:
+    """Zostawia pierwszą i ostatnią literę wulgaryzmu, resztę zamienia na gwiazdki."""
+    m = re.match(r"^(\W*)(\w+)(\W*)$", slowo)
+    if not m or not WULGARYZMY.search(m[2]) or len(m[2]) < 3:
+        return slowo
+    rdzen = m[2]
+    return m[1] + rdzen[0] + "*" * (len(rdzen) - 2) + rdzen[-1] + m[3]
+
+
 def make_subtitles(path: Path, start: float, end: float, font_name: str, ow: int, oh: int,
-                   top_h: int, workdir: Path, model_size: str) -> Path | None:
+                   top_h: int, workdir: Path, model_size: str, cenzura: bool = True) -> Path | None:
     try:
         from faster_whisper import WhisperModel
     except ImportError:
@@ -190,8 +232,11 @@ def make_subtitles(path: Path, start: float, end: float, font_name: str, ow: int
     run(["ffmpeg", "-y", "-ss", f"{start}", "-to", f"{end}", "-i", str(path), "-vn", "-ac", "1",
          "-ar", "16000", str(wav)])
     log.info("Transkrypcja (model %s, pierwsze uruchomienie pobiera model)...", model_size)
+    import numpy as np
+    with wave.open(str(wav), "rb") as wf:
+        audio = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
     model = WhisperModel(model_size, device="auto", compute_type="int8")
-    segments, _ = model.transcribe(str(wav), language="pl", word_timestamps=True, vad_filter=True)
+    segments, _ = model.transcribe(audio, language="pl", word_timestamps=True, vad_filter=True)
     words = [w for seg in segments for w in (seg.words or [])]
     if not words:
         log.info("Brak mowy do napisów.")
@@ -214,7 +259,10 @@ def make_subtitles(path: Path, start: float, end: float, font_name: str, ow: int
         "", "[Events]", "Format: Layer, Start, End, Style, Text",
     ]
     for ch in chunks:
-        text = " ".join(w.word.strip() for w in ch).upper()
+        slowa = [w.word.strip() for w in ch]
+        if cenzura:
+            slowa = [cenzuruj(x) for x in slowa]
+        text = " ".join(slowa).upper()
         lines.append(f"Dialogue: 0,{ass_time(ch[0].start)},{ass_time(ch[-1].end + 0.05)},Napis,{text}")
     ass = workdir / "napisy.ass"
     ass.write_text("\n".join(lines), encoding="utf-8")
@@ -314,7 +362,8 @@ def build(args: argparse.Namespace) -> Path:
         font_path = pick_font(cfg["hook"]["czcionki"])
         shutil.copy(font_path, work / Path(font_path).name)
         font_name = ImageFont.truetype(font_path, 20).getname()[0]
-        ass = make_subtitles(src, start, end, font_name, OW, OH, TOPH, work, args.model)
+        ass = make_subtitles(src, start, end, font_name, OW, OH, TOPH, work, args.model,
+                             cenzura=not args.bez_cenzury)
         if ass:
             fc.append(f"[{last}]subtitles=napisy.ass:fontsdir=.[v2]")
             last = "v2"
@@ -364,6 +413,7 @@ def main() -> None:
     p.add_argument("--koniec", type=float, help="ręczny koniec (s)")
     p.add_argument("--efekt", help="plik dźwiękowy (np. boom.wav) dodawany na kulminacjach")
     p.add_argument("--napisy", action="store_true", help="napisy z mowy (wymaga faster-whisper)")
+    p.add_argument("--bez-cenzury", action="store_true", help="nie maskuj przekleństw w napisach")
     p.add_argument("--model", default="small", help="model Whisper do napisów (tiny/base/small/medium)")
     p.add_argument("--uklad", default=str(BASE_DIR / "uklad_pysiex.yaml"), help="plik z układem kadru")
     p.add_argument("--wyjscie", help="plik wynikowy (domyślnie <nazwa>_slawa.mp4 obok źródła)")

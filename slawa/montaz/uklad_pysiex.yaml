@@ -27,7 +27,7 @@ hook:
 kulminacje:
   prog_LU_ponad_mediane: 6    # jak dużo głośniej niż typowy poziom klipu musi być moment
   min_odstep_s: 2.5
-  max_liczba: 4
+  max_na_30s: 4               # liczba kulminacji rośnie z długością klipu
   zoom_gry: 1.20              # „punch” na grę
   zoom_twarzy: 1.45           # powiększenie twarzy w najgłośniejszym momencie
   narastanie_s: 0.10

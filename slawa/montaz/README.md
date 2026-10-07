@@ -36,7 +36,9 @@ Wynik trafia obok źródła jako `<nazwa>_slawa.mp4`. Log techniczny zapisuje si
 | `--dlugosc N` | tnie do N sekund wokół najgłośniejszego momentu |
 | `--start` / `--koniec` | ręczne cięcie (sekundy) |
 | `--efekt plik.wav` | efekt dźwiękowy na każdej kulminacji (użyj efektu, do którego masz prawa) |
-| `--napisy` | napisy z mowy, po polsku, 1–3 słowa naraz |
+| `--napisy` | napisy z mowy, po polsku, 1–3 słowa naraz; przekleństwa maskowane (np. K***A) |
+| `--bez-cenzury` | napisy bez maskowania przekleństw |
+| `--model medium` | dokładniejsza, ale wolniejsza transkrypcja (domyślnie `small`) |
 | `--uklad` | inny plik układu (inna kamera, inny format) |
 
 ## Układ kadru
@@ -47,5 +49,6 @@ Wynik trafia obok źródła jako `<nazwa>_slawa.mp4`. Log techniczny zapisuje si
 
 - **Kulminacje to skoki głośności.** Bot nie odróżnia Twojego krzyku od wybuchu w grze i nie rozumie humoru.
 - **Memów i historii (styl wzorów A i B) nie robi.** Zostają dla Ciebie albo dla wersji 2.
-- **Transkrypcja Whisperem (`--napisy`) nie jest jeszcze przetestowana**, bo w środowisku, w którym powstał bot, pobieranie modelu było zablokowane. Samo nakładanie napisów (z polskimi znakami) sprawdziłem na przykładowym tekście. Reszta jest przetestowana na klipie „ale mi przykro” (27,5 s, render ok. 1 min).
+- Transkrypcja działa na Windowsie (sprawdzone 2026-10-07 na klipie „ale tak bezemnie”). Bot sam wczytuje dźwięk, bo faster-whisper 1.2.1 nie współpracuje z PyAV 19.
+- Liczba kulminacji rośnie z długością klipu (domyślnie 4 na każde 30 s). Reszta jest przetestowana na klipie „ale mi przykro” (27,5 s, render ok. 1 min).
 - Na Windowsie bot użyje czcionki Impact, a jeśli jej nie ma, Arial Bold.
