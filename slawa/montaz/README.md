@@ -59,6 +59,30 @@ Trzy kroki:
 
 Analizę można powtórzyć po dodaniu nowych plików: bot dopisze do planu tylko nowe klipy, a transkrypcji nie robi drugi raz.
 
+## Cały stream (VOD z Twitcha) → najlepsze momenty
+
+1. **Pobierz nagranie i czat.**
+   - Nagranie: panel twórcy na Twitchu (Producent wideo → menu przy transmisji → Pobierz) albo program TwitchDownloader (darmowy, github.com/lay295/TwitchDownloader).
+   - Czat: TwitchDownloader, zakładka/komenda „chat download”, format JSON. Dokładne polecenia sprawdź w `TwitchDownloaderCLI --help`, bo zależą od wersji programu.
+   - Twitch przechowuje nagrania tylko przez ograniczony czas (zależnie od statusu konta), więc pobieraj je od razu po streamie.
+2. **Znajdź momenty** (głośność + wybuchy czatu, z wyprzedzeniem 45 s i 15 s po kulminacji):
+   ```
+   python znajdz_momenty.py "C:\stream\vod.mp4" --czat "C:\stream\czat.json" --ile 30
+   ```
+   Powstaje folder `vod_momenty` z 30 fragmentami (60 s każdy) i `momenty.csv` (punktacja + próbka czatu). Bez `--czat` liczy się tylko głośność.
+3. **Ustaw układ kadru raz** (nagranie jest poziome, kamerka jest w rogu):
+   ```
+   python montuj.py "C:\stream\vod_momenty\moment_01_....mp4" --uklad uklad_vod_twitch.yaml --podglad-ukladu 20
+   ```
+   Otwórz powstały plik `_uklad.png` i popraw w `uklad_vod_twitch.yaml` prostokąt `kamerka` i punkt `twarz_x/twarz_y`, aż czerwona ramka obejmie kamerkę.
+4. **Dalej jak zwykle** (z `--uklad uklad_vod_twitch.yaml`):
+   ```
+   python montuj.py "C:\stream\vod_momenty" --analiza --dlugosc 22 --uklad uklad_vod_twitch.yaml
+   python montuj.py --plan "C:\stream\vod_momenty\slawa_plan.csv" --uklad uklad_vod_twitch.yaml
+   ```
+
+Wyszukiwarka znajduje **kandydatów** (głośno, czat szaleje), a nie żarty. Wybór sytuacji z puentą robi lokalny Claude z transkrypcji, a ostatnie słowo należy do Ciebie. Format czatu z TwitchDownloader (pola `content_offset_seconds`, `message.body`) sprawdziłem tylko na pliku testowym, nie na prawdziwym eksporcie.
+
 ## Układ kadru
 
 `uklad_pysiex.yaml` jest ustawiony pod Twoje obecne klipy 882×1568: granica kamerki i gry na 32,8% wysokości, twarz w punkcie (66%, 17%). Jeśli zmienisz układ kamerki w OBS, popraw te liczby.

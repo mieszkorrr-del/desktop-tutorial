@@ -342,6 +342,74 @@ def even(x: float) -> int:
     return int(round(x / 2)) * 2
 
 
+def _fit(rect: tuple[float, float, float, float], aspect: float, ax: float, ay: float) -> tuple[int, int, int, int]:
+    """Największy kadr o proporcjach `aspect` (szer/wys) wewnątrz `rect`, jak najbliżej punktu (ax, ay)."""
+    rx, ry, rw, rh = rect
+    if rw / rh > aspect:
+        w, h = even(rh * aspect), even(rh)
+        x = min(max(rx, ax - w / 2), rx + rw - w)
+        y = ry
+    else:
+        w, h = even(rw), even(rw / aspect)
+        x = rx
+        y = min(max(ry, ay - h / 2), ry + rh - h)
+    return int(x), int(y), w, h
+
+
+def layout(cfg: dict, W: int, H: int) -> dict:
+    """Wylicza kadry kamerki i gry ze źródła (pionowy klip albo poziome nagranie streamu) do 1080x1920."""
+    z, wy = cfg["zrodlo"], cfg["wyjscie"]
+    OW, OH = wy["szerokosc"], wy["wysokosc"]
+    TOPH = even(OH * wy["kamerka_proc"])
+    BOTH = OH - TOPH
+    if "kamerka" in z:  # prostokąty [x, y, szer, wys] jako ułamki klatki
+        cam_r = tuple(v * d for v, d in zip(z["kamerka"], (W, H, W, H)))
+        game_r = tuple(v * d for v, d in zip(z["gra"], (W, H, W, H)))
+    else:  # pionowy klip: kamerka u góry, gra pod spodem
+        seam = even(H * z["granica_kamera_gra"])
+        cam_r, game_r = (0, 0, W, seam), (0, seam, W, H - seam)
+    fx, fy = z["twarz_x"] * W, z["twarz_y"] * H
+    cam = _fit(cam_r, OW / TOPH, fx, fy)
+    mode = wy.get("gra_przyciecie", "srodek")
+    gax = z.get("gra_srodek_x", (game_r[0] + game_r[2] / 2) / W) * W
+    if mode == "gora":
+        gay = game_r[1] + game_r[3]  # zachowaj dół (pasek umiejętności), obetnij górę
+    else:
+        gay = z.get("gra_srodek_y", (game_r[1] + game_r[3] / 2) / H) * H
+    game = _fit(game_r, OW / BOTH, gax, gay)
+    face = ((fx - cam[0]) / cam[2] * OW, (fy - cam[1]) / cam[3] * TOPH)
+    return {"OW": OW, "OH": OH, "TOPH": TOPH, "BOTH": BOTH, "cam": cam, "game": game, "face": face}
+
+
+def preview_layout(src: Path, cfg: dict, t: float, out: Path) -> Path:
+    """Zapisuje PNG: klatka źródła z zaznaczonymi kadrami + podgląd złożonego pionu. Do kalibracji układu."""
+    info = probe(src)
+    with tempfile.TemporaryDirectory(prefix="kadr_") as tmp:
+        frame = Path(tmp) / "f.png"
+        run(["ffmpeg", "-y", "-ss", f"{t}", "-i", str(src), "-frames:v", "1", str(frame)])
+        im = Image.open(frame).convert("RGB")
+    g = layout(cfg, info.w, info.h)
+    cx, cy, cw, ch = g["cam"]
+    gx, gy, gw, gch = g["game"]
+    comp = Image.new("RGB", (g["OW"], g["OH"]))
+    comp.paste(im.crop((cx, cy, cx + cw, cy + ch)).resize((g["OW"], g["TOPH"])), (0, 0))
+    comp.paste(im.crop((gx, gy, gx + gw, gy + gch)).resize((g["OW"], g["BOTH"])), (0, g["TOPH"]))
+    d = ImageDraw.Draw(im)
+    lw = max(3, info.w // 300)
+    d.rectangle((cx, cy, cx + cw, cy + ch), outline="#FF2D2D", width=lw)
+    d.rectangle((gx, gy, gx + gw, gy + gch), outline="#2DFF5A", width=lw)
+    fx, fy = cfg["zrodlo"]["twarz_x"] * info.w, cfg["zrodlo"]["twarz_y"] * info.h
+    d.ellipse((fx - 3 * lw, fy - 3 * lw, fx + 3 * lw, fy + 3 * lw), outline="#FFE600", width=lw)
+    scale = info.h / g["OH"]
+    comp = comp.resize((int(g["OW"] * scale), info.h))
+    sheet = Image.new("RGB", (info.w + comp.width + 20, info.h), "white")
+    sheet.paste(im, (0, 0))
+    sheet.paste(comp, (info.w + 20, 0))
+    sheet.save(out)
+    log.info("Podgląd układu: %s (czerwony = kamerka, zielony = gra, żółte kółko = twarz)", out)
+    return out
+
+
 @dataclass
 class Zlecenie:
     src: Path
@@ -385,34 +453,11 @@ def build(z_: Zlecenie, cfg: dict) -> Path:
     game_peaks = [t for t, _ in peaks if t != face_peak]
 
     # geometria
-    z, wy = cfg["zrodlo"], cfg["wyjscie"]
-    W, H = info.w, info.h
-    seam = even(H * z["granica_kamera_gra"])
-    OW, OH = wy["szerokosc"], wy["wysokosc"]
-    TOPH = even(OH * wy["kamerka_proc"])
-    BOTH = OH - TOPH
-
-    cw = seam * OW / TOPH  # kamerka: kadr o proporcjach docelowych
-    if cw <= W:
-        cw, ch = even(cw), seam
-        cx = min(max(0, z["twarz_x"] * W - cw / 2), W - cw)
-        cy = 0
-    else:
-        cw, ch = W, even(W * TOPH / OW)
-        cx = 0
-        cy = min(max(0, z["twarz_y"] * H - ch / 2), seam - ch)
-    fxo = (z["twarz_x"] * W - cx) / cw * OW
-    fyo = (z["twarz_y"] * H - cy) / ch * TOPH
-
-    gh = H - seam  # gra
-    nh = W * BOTH / OW
-    if nh <= gh:
-        gw, gch = W, even(nh)
-        gx = 0
-        gy = seam + (gh - gch if wy["gra_przyciecie"] == "gora" else (gh - gch) / 2)
-    else:
-        gw, gch = even(gh * OW / BOTH), even(gh)
-        gx, gy = (W - gw) / 2, seam
+    g = layout(cfg, info.w, info.h)
+    OW, OH, TOPH, BOTH = g["OW"], g["OH"], g["TOPH"], g["BOTH"]
+    cx, cy, cw, ch = g["cam"]
+    gx, gy, gw, gch = g["game"]
+    fxo, fyo = g["face"]
 
     fps = f"{info.fps:g}"
     zf = f"1+{kul['zoom_twarzy'] - 1:.3f}*({envelope([face_peak] if face_peak else [], kul)})"
@@ -588,10 +633,17 @@ def main() -> None:
     p.add_argument("--analiza", action="store_true", help="folder: analiza wszystkich klipów i plan slawa_plan.csv")
     p.add_argument("--bez-transkrypcji", action="store_true", help="przy --analiza pomiń Whisper (szybciej)")
     p.add_argument("--plan", help="montaż wszystkich klipów z pliku slawa_plan.csv")
+    p.add_argument("--podglad-ukladu", type=float, metavar="SEKUNDA",
+                   help="zamiast montażu zapisz PNG z zaznaczonym kadrem w danej sekundzie (do ustawiania układu)")
     args = p.parse_args()
     try:
         cfg = yaml.safe_load(Path(args.uklad).read_text(encoding="utf-8"))
-        if args.plan:
+        if args.podglad_ukladu is not None:
+            src = Path(args.wejscie or "")
+            if not src.is_file():
+                sys.exit(f"Nie ma pliku: {src}")
+            preview_layout(src, cfg, args.podglad_ukladu, src.with_name(src.stem + "_uklad.png"))
+        elif args.plan:
             render_plan(Path(args.plan), cfg, args.model, not args.bez_cenzury, args.efekt)
         elif args.analiza:
             folder = Path(args.wejscie or "")

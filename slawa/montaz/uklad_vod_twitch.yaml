@@ -1,0 +1,46 @@
+# Układ dla POZIOMEGO nagrania streamu z Twitcha (16:9) → pion 1080x1920.
+# UWAGA: prostokąt kamerki to wartość PRZYKŁADOWA. Ustaw go na swoim nagraniu:
+#   python montuj.py moment_01_....mp4 --uklad uklad_vod_twitch.yaml --podglad-ukladu 20
+# i popraw liczby, aż czerwona ramka obejmie kamerkę, a zielona grę.
+# Prostokąty: [x, y, szerokość, wysokość] jako ułamki klatki (0–1), licząc od lewego górnego rogu.
+
+zrodlo:
+  kamerka: [0.0, 0.62, 0.22, 0.38]   # PRZYKŁAD: kamerka w lewym dolnym rogu
+  gra: [0.0, 0.0, 1.0, 1.0]          # cały ekran gry
+  gra_srodek_x: 0.5                  # w LoL bohater jest zwykle na środku ekranu
+  gra_srodek_y: 0.5
+  twarz_x: 0.11                      # środek twarzy (ułamek szerokości klatki)
+  twarz_y: 0.80                      # środek twarzy (ułamek wysokości klatki)
+
+wyjscie:
+  szerokosc: 1080
+  wysokosc: 1920
+  kamerka_proc: 0.40
+  gra_przyciecie: srodek
+
+hook:
+  czas_s: do_kulminacji
+  min_s: 1.8
+  max_s: 8.0
+  czcionki:
+    - "C:/Windows/Fonts/impact.ttf"
+    - "C:/Windows/Fonts/arialbd.ttf"
+    - "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+  rozmiar_proc_szerokosci: 0.11
+  kolor: "#FFFFFF"
+  kolor_akcentu: "#FF2D2D"
+  obrys_px: 8
+
+kulminacje:
+  prog_LU_ponad_mediane: 6
+  min_odstep_s: 2.5
+  max_na_30s: 4
+  zoom_gry: 1.20
+  zoom_twarzy: 1.45
+  narastanie_s: 0.10
+  trzymanie_s: 0.50
+  opadanie_s: 0.25
+
+dzwiek:
+  glosnosc_LUFS: -14
+  efekt_glosnosc: 0.8
