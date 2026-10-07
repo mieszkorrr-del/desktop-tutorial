@@ -33,7 +33,7 @@ from pathlib import Path
 
 try:
     import yaml
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image, ImageDraw, ImageFilter, ImageFont
 except ImportError:
     sys.exit("Brak bibliotek. Zainstaluj: pip install -r requirements.txt")
 
@@ -302,7 +302,8 @@ def transcribe_file(path: Path, model_size: str, cache_dir: Path) -> list[dict] 
 
 
 def make_subtitles(words_all: list[dict], start: float, end: float, font_name: str, ow: int, oh: int,
-                   top_h: int, workdir: Path, cenzura: bool = True, kolor_aktywny: str | None = "#FFE600") -> Path | None:
+                   top_h: int, workdir: Path, cenzura: bool = True, kolor_aktywny: str | None = "#FFE600",
+                   margin_v: int | None = None) -> Path | None:
     words = [dict(w, start=w["start"] - start, end=w["end"] - start)
              for w in words_all if w["start"] >= start - 0.05 and w["end"] <= end + 0.05]
     if not words:
@@ -316,7 +317,7 @@ def make_subtitles(words_all: list[dict], start: float, end: float, font_name: s
             cur = []
     if cur:
         chunks.append(cur)
-    margin = top_h + int((oh - top_h) * 0.18)
+    margin = margin_v if margin_v is not None else top_h + int((oh - top_h) * 0.18)
     lines = [
         "[Script Info]", "ScriptType: v4.00+", f"PlayResX: {ow}", f"PlayResY: {oh}", "",
         "[V4+ Styles]",
@@ -392,7 +393,16 @@ def layout(cfg: dict, W: int, H: int) -> dict:
         gay = z.get("gra_srodek_y", (game_r[1] + game_r[3] / 2) / H) * H
     game = _fit(game_r, OW / BOTH, gax, gay)
     face = ((fx - cam[0]) / cam[2] * OW, (fy - cam[1]) / cam[3] * TOPH)
-    return {"OW": OW, "OH": OH, "TOPH": TOPH, "BOTH": BOTH, "cam": cam, "game": game, "face": face}
+    res = {"OW": OW, "OH": OH, "TOPH": TOPH, "BOTH": BOTH, "cam": cam, "game": game, "face": face,
+           "wide": None, "GH": BOTH}
+    # Szeroki kadr gry: więcej mapy na całą szerokość ekranu, pod nim rozmyte tło z gry (miejsce na napisy).
+    aspect = wy.get("gra_proporcje")
+    if aspect:
+        gh = even(OW / float(aspect))
+        if gh < BOTH:
+            res["wide"] = _fit(game_r, float(aspect), gax, z.get("gra_srodek_y", (game_r[1] + game_r[3] / 2) / H) * H)
+            res["GH"] = gh
+    return res
 
 
 def preview_layout(src: Path, cfg: dict, t: float, out: Path) -> Path:
@@ -407,7 +417,14 @@ def preview_layout(src: Path, cfg: dict, t: float, out: Path) -> Path:
     gx, gy, gw, gch = g["game"]
     comp = Image.new("RGB", (g["OW"], g["OH"]))
     comp.paste(im.crop((cx, cy, cx + cw, cy + ch)).resize((g["OW"], g["TOPH"])), (0, 0))
-    comp.paste(im.crop((gx, gy, gx + gw, gy + gch)).resize((g["OW"], g["BOTH"])), (0, g["TOPH"]))
+    if g["wide"]:
+        bg = im.crop((gx, gy, gx + gw, gy + gch)).resize((g["OW"], g["BOTH"])).filter(ImageFilter.GaussianBlur(25))
+        comp.paste(bg, (0, g["TOPH"]))
+        wx, wy_, ww, wh = g["wide"]
+        comp.paste(im.crop((wx, wy_, wx + ww, wy_ + wh)).resize((g["OW"], g["GH"])), (0, g["TOPH"]))
+        gx, gy, gw, gch = g["wide"]  # na klatce źródłowej zaznacz szeroki kadr
+    else:
+        comp.paste(im.crop((gx, gy, gx + gw, gy + gch)).resize((g["OW"], g["BOTH"])), (0, g["TOPH"]))
     d = ImageDraw.Draw(im)
     lw = max(3, info.w // 300)
     d.rectangle((cx, cy, cx + cw, cy + ch), outline="#FF2D2D", width=lw)
@@ -485,10 +502,22 @@ def build(z_: Zlecenie, cfg: dict) -> Path:
             f"[k]crop={cw}:{ch}:{int(cx)}:{int(cy)},scale={OW}:{TOPH},"
             f"zoompan=z='{zf}':d=1:s={OW}x{TOPH}:fps={fps}:"
             f"x='max(0,min(iw-iw/zoom,{fxo:.1f}-iw/zoom/2))':y='max(0,min(ih-ih/zoom,{fyo:.1f}-ih/zoom/2))'[top]",
-            f"[g]crop={gw}:{gch}:{int(gx)}:{int(gy)},scale={OW}:{BOTH},"
-            f"zoompan=z='{zg}':d=1:s={OW}x{BOTH}:fps={fps}:x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2'[bot]",
-            "[top][bot]vstack=inputs=2,setsar=1[v0]",
         ]
+        if g["wide"]:
+            wx, wy_, ww, wh = g["wide"]
+            GH = g["GH"]
+            fc += [
+                "[g]split=2[gb][gw]",
+                f"[gb]crop={gw}:{gch}:{int(gx)}:{int(gy)},scale={OW // 4}:{BOTH // 4},boxblur=6:2,"
+                f"scale={OW}:{BOTH},eq=brightness=-0.12[bg]",
+                f"[gw]crop={ww}:{wh}:{int(wx)}:{int(wy_)},scale={OW}:{GH},"
+                f"zoompan=z='{zg}':d=1:s={OW}x{GH}:fps={fps}:x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2'[gp]",
+                "[bg][gp]overlay=0:0[bot]",
+            ]
+        else:
+            fc.append(f"[g]crop={gw}:{gch}:{int(gx)}:{int(gy)},scale={OW}:{BOTH},"
+                      f"zoompan=z='{zg}':d=1:s={OW}x{BOTH}:fps={fps}:x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2'[bot]")
+        fc.append("[top][bot]vstack=inputs=2,setsar=1[v0]")
         last = "v0"
         idx = 1
 
@@ -508,7 +537,8 @@ def build(z_: Zlecenie, cfg: dict) -> Path:
                 shutil.copy(font_path, work / Path(font_path).name)
                 font_name = ImageFont.truetype(font_path, 20).getname()[0]
                 ass = make_subtitles(words, start, end, font_name, OW, OH, TOPH, work, cenzura=z_.cenzura,
-                                     kolor_aktywny=cfg.get("napisy", {}).get("kolor_aktywnego_slowa", "#FFE600"))
+                                     kolor_aktywny=cfg.get("napisy", {}).get("kolor_aktywnego_slowa", "#FFE600"),
+                                     margin_v=(TOPH + g["GH"] + (BOTH - g["GH"]) // 3) if g["wide"] else None)
                 if ass:
                     fc.append(f"[{last}]subtitles=napisy.ass:fontsdir=.[v2]")
                     last = "v2"
@@ -631,9 +661,11 @@ def analyze_folder(folder: Path, cfg: dict, length: float, model: str, transkryp
     return plan_path
 
 
-def render_plan(plan_path: Path, cfg: dict, model: str, cenzura: bool, efekt: str | None) -> None:
+def render_plan(plan_path: Path, cfg: dict, model: str, cenzura: bool, efekt: str | None,
+                out_folder: Path | None = None) -> None:
     rows = read_plan(plan_path)
     folder = plan_path.parent
+    out_folder = out_folder or folder / "gotowe"
     todo = [r for r in rows if r.get("status", "") in ("do_zrobienia", "blad")]
     log.info("Plan: %d klipów do montażu (pomijam status 'gotowe' i 'pomin').", len(todo))
     for n, r in enumerate(todo, 1):
@@ -641,7 +673,7 @@ def render_plan(plan_path: Path, cfg: dict, model: str, cenzura: bool, efekt: st
         log.info("[%d/%d] %s", n, len(todo), r["plik"])
         try:
             zl = Zlecenie(
-                src=src, out=folder / "gotowe" / f"{src.stem}_slawa.mp4",
+                src=src, out=out_folder / f"{src.stem}_slawa.mp4",
                 hook=(r.get("hook") or "").strip() or None,
                 start=float(r["start"].replace(",", ".")), koniec=float(r["koniec"].replace(",", ".")),
                 napisy=(r.get("napisy", "").strip().lower() == "tak"), cenzura=cenzura, model=model, efekt=efekt,
@@ -653,7 +685,7 @@ def render_plan(plan_path: Path, cfg: dict, model: str, cenzura: bool, efekt: st
             r["status"] = "blad"
             print(f"! {r['plik']}: {e}")
         write_plan(plan_path, rows)  # status po każdym klipie: po przerwaniu wznawia od miejsca błędu
-    log.info("Koniec. Gotowe klipy są w: %s", folder / "gotowe")
+    log.info("Koniec. Gotowe klipy są w: %s", out_folder)
 
 
 def main() -> None:
@@ -675,18 +707,23 @@ def main() -> None:
     p.add_argument("--analiza", action="store_true", help="folder: analiza wszystkich klipów i plan slawa_plan.csv")
     p.add_argument("--bez-transkrypcji", action="store_true", help="przy --analiza pomiń Whisper (szybciej)")
     p.add_argument("--plan", help="montaż wszystkich klipów z pliku slawa_plan.csv")
+    p.add_argument("--folder-wyjsciowy", help="przy --plan: gdzie zapisać gotowe klipy (domyślnie podfolder 'gotowe')")
     p.add_argument("--podglad-ukladu", type=float, metavar="SEKUNDA",
                    help="zamiast montażu zapisz PNG z zaznaczonym kadrem w danej sekundzie (do ustawiania układu)")
     args = p.parse_args()
     try:
-        cfg = yaml.safe_load(Path(args.uklad).read_text(encoding="utf-8"))
+        uklad = Path(args.uklad)
+        if not uklad.exists() and (BASE_DIR / uklad).exists():
+            uklad = BASE_DIR / uklad  # nazwa pliku układu działa z każdego folderu
+        cfg = yaml.safe_load(uklad.read_text(encoding="utf-8"))
         if args.podglad_ukladu is not None:
             src = Path(args.wejscie or "")
             if not src.is_file():
                 sys.exit(f"Nie ma pliku: {src}")
             preview_layout(src, cfg, args.podglad_ukladu, src.with_name(src.stem + "_uklad.png"))
         elif args.plan:
-            render_plan(Path(args.plan), cfg, args.model, not args.bez_cenzury, args.efekt)
+            render_plan(Path(args.plan), cfg, args.model, not args.bez_cenzury, args.efekt,
+                        Path(args.folder_wyjsciowy) if args.folder_wyjsciowy else None)
         elif args.analiza:
             folder = Path(args.wejscie or "")
             if not folder.is_dir():

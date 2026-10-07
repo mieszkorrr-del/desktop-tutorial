@@ -99,6 +99,16 @@ Każdy zmontowany klip dopisuje swoje cechy (długość, hook, liczba słów hoo
 
 Wyszukiwarka znajduje **kandydatów** (głośno, czat szaleje), a nie żarty. Wybór sytuacji z puentą robi lokalny Claude z transkrypcji, a ostatnie słowo należy do Ciebie. Format czatu z TwitchDownloader (pola `content_offset_seconds`, `message.body`) sprawdziłem tylko na pliku testowym, nie na prawdziwym eksporcie.
 
+## Kilka nagrań naraz (np. 4 streamy w jednym folderze)
+
+```
+python znajdz_momenty.py "C:\ZROBIONE CLIPY CLAUDE\tututu\live" --ile 15
+python montuj.py "C:\ZROBIONE CLIPY CLAUDE\tututu\live\_momenty" --analiza --dlugosc 22 --uklad uklad_vod_twitch.yaml
+(lokalny Claude uzupełnia slawa_plan.csv)
+python montuj.py --plan "C:\ZROBIONE CLIPY CLAUDE\tututu\live\_momenty\slawa_plan.csv" --uklad uklad_vod_twitch.yaml --folder-wyjsciowy "C:\ZROBIONE CLIPY CLAUDE\tututu\klipy z live"
+```
+Czat dla każdego nagrania bot szuka sam jako `<nazwa nagrania>.json` obok pliku. Fragmenty ze wszystkich nagrań trafiają do jednego folderu `_momenty` z nazwą nagrania na początku. Szeroki kadr gry (więcej mapy) włącza `gra_proporcje: 1.33` w `uklad_vod_twitch.yaml`.
+
 ## Układ kadru
 
 `uklad_pysiex.yaml` jest ustawiony pod Twoje obecne klipy 882×1568: granica kamerki i gry na 32,8% wysokości, twarz w punkcie (66%, 17%). Jeśli zmienisz układ kamerki w OBS, popraw te liczby.

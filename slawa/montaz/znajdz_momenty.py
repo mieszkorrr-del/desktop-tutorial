@@ -186,46 +186,39 @@ def pick_moments(score: list[float], count: int, spacing: int) -> list[int]:
     return chosen
 
 
-def main() -> None:
-    setup_logging()
-    if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
-        sys.exit("Brak ffmpeg (Windows: winget install ffmpeg, potem nowy terminal).")
-    p = argparse.ArgumentParser(description="Wycina kandydatów na klipy z długiego nagrania streamu.")
-    p.add_argument("nagranie", help="plik nagrania (VOD z Twitcha)")
-    p.add_argument("--czat", help="czat z TwitchDownloader (JSON)")
-    p.add_argument("--ile", type=int, default=30, help="ile momentów wyciąć (domyślnie 30)")
-    p.add_argument("--przed", type=int, default=45, help="sekund kontekstu przed kulminacją (domyślnie 45)")
-    p.add_argument("--po", type=int, default=15, help="sekund po kulminacji (domyślnie 15)")
-    p.add_argument("--opoznienie-czatu", type=float, default=8.0, help="o ile s czat spóźnia się za akcją")
-    p.add_argument("--waga-czatu", type=float, default=1.0, help="waga czatu względem głośności")
-    p.add_argument("--zdarzenia-lol", help="CSV z lol_logger.py (zabójstwa, multikille, smoki...)")
-    p.add_argument("--poczatek-nagrania", help='czas startu nagrania, np. "2026-10-07 18:02:15" (potrzebny z --zdarzenia-lol)')
-    p.add_argument("--wyjscie", help="folder na fragmenty (domyślnie <nagranie>_momenty obok pliku)")
-    args = p.parse_args()
+WIDEO = {".mp4", ".mkv", ".mov", ".flv", ".ts"}
 
-    src = Path(args.nagranie)
-    if not src.is_file():
-        sys.exit(f"Nie ma pliku: {src}")
-    out_dir = Path(args.wyjscie) if args.wyjscie else src.with_name(src.stem + "_momenty")
-    try:
-        dur = duration(src)
-        loud = loudness_per_second(src, dur)
-        chat = load_chat(Path(args.czat)) if args.czat else None
-        lol = None
-        if args.zdarzenia_lol:
-            if not args.poczatek_nagrania:
-                sys.exit("Do --zdarzenia-lol podaj --poczatek-nagrania (godzina startu streamu/nagrania).")
-            lol = load_lol_events(Path(args.zdarzenia_lol), datetime.fromisoformat(args.poczatek_nagrania), len(loud))
-        score, loud_ex, chat_ex = score_timeline(loud, chat, args.opoznienie_czatu, args.waga_czatu, lol)
-        peaks = pick_moments(score, args.ile, args.przed + args.po)
-        if not peaks:
-            sys.exit("Nie znalazłem wyraźnych momentów (nagranie bez skoków głośności i czatu?).")
-        out_dir.mkdir(parents=True, exist_ok=True)
-        rows = []
-        for rank, pk in enumerate(sorted(peaks, key=lambda i: -score[i]), 1):
-            start = max(0, pk - args.przed)
-            length = min(args.przed + args.po, dur - start)
-            name = f"moment_{rank:02d}_{hms(pk)}.mp4"
+
+def find_chat_for(vod: Path) -> Path | None:
+    """Czat obok nagrania: <nazwa>.json albo <nazwa>_czat.json."""
+    for cand in (vod.with_suffix(".json"), vod.with_name(vod.stem + "_czat.json")):
+        if cand.is_file():
+            return cand
+    return None
+
+
+def process_vod(src: Path, out_dir: Path, args: argparse.Namespace, chat_path: Path | None,
+                prefix: str = "") -> list[dict]:
+    dur = duration(src)
+    loud = loudness_per_second(src, dur)
+    chat = load_chat(chat_path) if chat_path else None
+    lol = None
+    if args.zdarzenia_lol:
+        lol = load_lol_events(Path(args.zdarzenia_lol), datetime.fromisoformat(args.poczatek_nagrania), len(loud))
+    score, loud_ex, chat_ex = score_timeline(loud, chat, args.opoznienie_czatu, args.waga_czatu, lol)
+    peaks = pick_moments(score, args.ile, args.przed + args.po)
+    if not peaks:
+        log.warning("%s: brak wyraźnych momentów (bez skoków głośności i czatu).", src.name)
+        return []
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for rank, pk in enumerate(sorted(peaks, key=lambda i: -score[i]), 1):
+        start = max(0, pk - args.przed)
+        length = min(args.przed + args.po, dur - start)
+        name = f"{prefix}moment_{rank:02d}_{hms(pk)}.mp4"
+        if (out_dir / name).exists():
+            log.info("Pomijam (już wycięty): %s", name)
+        else:
             # kopiowanie strumieni bez kodowania: szybkie; start może przesunąć się do najbliższej klatki kluczowej
             res = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-ss", str(start),
                                   "-i", str(src), "-t", str(length), "-c", "copy", "-avoid_negative_ts", "1",
@@ -233,15 +226,63 @@ def main() -> None:
             if res.returncode != 0:
                 log.error("Nie udało się wyciąć %s: %s", name, res.stderr[-500:])
                 continue
-            sample = ""
-            if chat:
-                okno = [b for t, b in chat if pk - 2 <= t - args.opoznienie_czatu <= pk + 10]
-                sample = " | ".join(m for m, _ in Counter(okno).most_common(6))[:200]
-            rows.append({"ranking": rank, "plik": name, "czas_w_nagraniu": hms(pk),
-                         "kulminacja_w_pliku_s": pk - start, "punkty": round(score[pk], 1),
-                         "glosnosc": round(loud_ex[pk], 1), "czat": round(chat_ex[pk], 2),
-                         "lol": round(lol[pk], 1) if lol else 0, "probka_czatu": sample})
-            log.info("[%d/%d] %s (punkty %.1f)", rank, len(peaks), name, score[pk])
+        sample = ""
+        if chat:
+            okno = [b for t, b in chat if pk - 2 <= t - args.opoznienie_czatu <= pk + 10]
+            sample = " | ".join(m for m, _ in Counter(okno).most_common(6))[:200]
+        rows.append({"nagranie": src.name, "ranking": rank, "plik": name, "czas_w_nagraniu": hms(pk),
+                     "kulminacja_w_pliku_s": pk - start, "punkty": round(score[pk], 1),
+                     "glosnosc": round(loud_ex[pk], 1), "czat": round(chat_ex[pk], 2),
+                     "lol": round(lol[pk], 1) if lol else 0, "probka_czatu": sample})
+        log.info("[%d/%d] %s (punkty %.1f)", rank, len(peaks), name, score[pk])
+    return rows
+
+
+def main() -> None:
+    setup_logging()
+    if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+        sys.exit("Brak ffmpeg (Windows: winget install ffmpeg, potem nowy terminal).")
+    p = argparse.ArgumentParser(description="Wycina kandydatów na klipy z długiego nagrania streamu.")
+    p.add_argument("nagranie", help="plik nagrania (VOD z Twitcha) albo folder z kilkoma nagraniami")
+    p.add_argument("--czat", help="czat z TwitchDownloader (JSON); przy folderze szukany automatycznie jako <nagranie>.json")
+    p.add_argument("--ile", type=int, default=30, help="ile momentów wyciąć z jednego nagrania (domyślnie 30)")
+    p.add_argument("--przed", type=int, default=45, help="sekund kontekstu przed kulminacją (domyślnie 45)")
+    p.add_argument("--po", type=int, default=15, help="sekund po kulminacji (domyślnie 15)")
+    p.add_argument("--opoznienie-czatu", type=float, default=8.0, help="o ile s czat spóźnia się za akcją")
+    p.add_argument("--waga-czatu", type=float, default=1.0, help="waga czatu względem głośności")
+    p.add_argument("--zdarzenia-lol", help="CSV z lol_logger.py (zabójstwa, multikille, smoki...); tylko dla 1 nagrania")
+    p.add_argument("--poczatek-nagrania", help='czas startu nagrania, np. "2026-10-07 18:02:15" (potrzebny z --zdarzenia-lol)')
+    p.add_argument("--wyjscie", help="folder na fragmenty (domyślnie <nagranie>_momenty albo <folder>\\_momenty)")
+    args = p.parse_args()
+
+    src = Path(args.nagranie)
+    if args.zdarzenia_lol and not args.poczatek_nagrania:
+        sys.exit("Do --zdarzenia-lol podaj --poczatek-nagrania (godzina startu streamu/nagrania).")
+    try:
+        if src.is_dir():
+            if args.zdarzenia_lol:
+                sys.exit("--zdarzenia-lol działa dla pojedynczego nagrania, nie dla folderu.")
+            vods = sorted(v for v in src.iterdir() if v.is_file() and v.suffix.lower() in WIDEO)
+            if not vods:
+                sys.exit(f"W folderze {src} nie ma nagrań ({', '.join(sorted(WIDEO))}).")
+            out_dir = Path(args.wyjscie) if args.wyjscie else src / "_momenty"
+            rows = []
+            for n, vod in enumerate(vods, 1):
+                log.info("=== Nagranie %d/%d: %s", n, len(vods), vod.name)
+                chat_path = find_chat_for(vod)
+                if chat_path:
+                    log.info("Czat: %s", chat_path.name)
+                try:
+                    rows += process_vod(vod, out_dir, args, chat_path, prefix=f"{vod.stem}_")
+                except (RuntimeError, OSError, ValueError, json.JSONDecodeError):
+                    log.exception("Pomijam nagranie %s po błędzie", vod.name)
+        elif src.is_file():
+            out_dir = Path(args.wyjscie) if args.wyjscie else src.with_name(src.stem + "_momenty")
+            rows = process_vod(src, out_dir, args, Path(args.czat) if args.czat else None)
+        else:
+            sys.exit(f"Nie ma pliku ani folderu: {src}")
+        if not rows:
+            sys.exit("Nie wycięto żadnego momentu.")
         with open(out_dir / "momenty.csv", "w", encoding="utf-8-sig", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0].keys()), delimiter=";")
             w.writeheader()

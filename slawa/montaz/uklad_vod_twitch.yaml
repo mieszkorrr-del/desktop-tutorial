@@ -17,6 +17,9 @@ wyjscie:
   wysokosc: 1920
   kamerka_proc: 0.40
   gra_przyciecie: srodek
+  # Szeroki kadr gry (więcej mapy): proporcje szer/wys wycinka gry. 1.33 = 4:3, 1.78 = cały ekran 16:9.
+  # Pod panelem gry rozmyte tło z gry, na nim napisy. Usuń tę linię, żeby wrócić do wąskiego kadru na cały dół.
+  gra_proporcje: 1.33
 
 hook:
   czas_s: do_kulminacji
