@@ -107,7 +107,7 @@ python montuj.py "C:\ZROBIONE CLIPY CLAUDE\tututu\live\_momenty" --analiza --dlu
 (lokalny Claude uzupełnia slawa_plan.csv)
 python montuj.py --plan "C:\ZROBIONE CLIPY CLAUDE\tututu\live\_momenty\slawa_plan.csv" --uklad uklad_vod_twitch.yaml --folder-wyjsciowy "C:\ZROBIONE CLIPY CLAUDE\tututu\klipy z live"
 ```
-Czat dla każdego nagrania bot szuka sam jako `<nazwa nagrania>.json` obok pliku. Fragmenty ze wszystkich nagrań trafiają do jednego folderu `_momenty` z nazwą nagrania na początku. Szeroki kadr gry (więcej mapy) włącza `gra_proporcje: 1.33` w `uklad_vod_twitch.yaml`.
+Czat dla każdego nagrania bot szuka sam jako `<nazwa nagrania>.json` obok pliku. Domyślnie bierze najwyżej 3 momenty na godzinę nagrania (`--max-na-godzine`), żeby kandydaci nie pochodzili z jednego głośnego fragmentu. Głośność zapisuje w `_momenty\<nagranie>.glosnosc.json`, więc ponowne uruchomienie z innymi ustawieniami jest szybkie. Analiza zapisuje też klatkę z każdego fragmentu w `slawa_klatki` (żeby było widać, w co grasz). Fragmenty ze wszystkich nagrań trafiają do jednego folderu `_momenty` z nazwą nagrania na początku. Szeroki kadr gry (więcej mapy) włącza `gra_proporcje: 1.33` w `uklad_vod_twitch.yaml`.
 
 ## Układ kadru
 

@@ -643,7 +643,17 @@ def analyze_folder(folder: Path, cfg: dict, length: float, model: str, transkryp
             info = probe(src)
             curve = loudness_curve(src, 0, info.dur) if info.audio else []
             start, end = choose_window(curve, info.dur, length, cfg["kulminacje"]) if curve else (0.0, min(info.dur, length))
-            peaks = [t for t, _ in find_peaks(curve, cfg["kulminacje"])] if curve else []
+            found = find_peaks(curve, cfg["kulminacje"]) if curve else []
+            peaks = [t for t, _ in sorted(found, key=lambda p: -p[1])]  # od najgłośniejszej
+            # klatka z najmocniejszego momentu: lokalny Claude zobaczy, w co grasz i co się dzieje
+            klatki = folder / "slawa_klatki"
+            klatki.mkdir(exist_ok=True)
+            t_kl = next((t for t in peaks if start <= t <= end), (start + end) / 2)
+            try:
+                run(["ffmpeg", "-y", "-ss", f"{t_kl:.2f}", "-i", str(src), "-frames:v", "1",
+                     "-vf", "scale=960:-2", "-q:v", "4", str(klatki / f"{src.stem}.jpg")])
+            except RuntimeError:
+                log.warning("Nie udało się zapisać klatki dla %s", src.name)
             tekst = ""
             if transkrypcja:
                 words = transcribe_file(src, model, cache_dir_for(src)) or []
@@ -651,7 +661,7 @@ def analyze_folder(folder: Path, cfg: dict, length: float, model: str, transkryp
             rows.append({
                 "plik": src.name, "dlugosc_zrodla_s": f"{info.dur:.1f}", "start": f"{start:.1f}",
                 "koniec": f"{end:.1f}", "hook": "", "napisy": "tak" if transkrypcja else "nie",
-                "status": "do_zrobienia", "kulminacje_s": " ".join(f"{t:.1f}" for t in peaks),
+                "status": "do_zrobienia", "kulminacje_s": " ".join(f"{t:.1f}" for t in sorted(peaks)),
                 "tekst_fragmentu": tekst[:300],
             })
         except (RuntimeError, ValueError, OSError) as e:

@@ -173,7 +173,7 @@ def score_timeline(loud: list[float], chat: list[tuple[float, str]] | None, dela
     return score, loud_ex, chat_ex
 
 
-def pick_moments(score: list[float], count: int, spacing: int) -> list[int]:
+def pick_moments(score: list[float], count: int, spacing: int, per_hour: int = 0) -> list[int]:
     # wygładzenie 3 s, żeby pojedynczy trzask nie wygrywał z dłuższą reakcją
     sm = [sum(score[max(0, i - 1): i + 2]) for i in range(len(score))]
     order = sorted(range(len(sm)), key=lambda i: -sm[i])
@@ -181,8 +181,11 @@ def pick_moments(score: list[float], count: int, spacing: int) -> list[int]:
     for i in order:
         if len(chosen) >= count or sm[i] < 3.0:  # poniżej tego progu to szum, nie moment
             break
-        if score[i] >= 1.0 and all(abs(i - c) >= spacing for c in chosen):
-            chosen.append(i)
+        if score[i] < 1.0 or any(abs(i - c) < spacing for c in chosen):
+            continue
+        if per_hour and sum(1 for c in chosen if abs(i - c) < 1800) >= per_hour:
+            continue  # rozkładaj kandydatów po całym streamie zamiast brać 15 z jednego głośnego fragmentu
+        chosen.append(i)
     return chosen
 
 
@@ -200,13 +203,27 @@ def find_chat_for(vod: Path) -> Path | None:
 def process_vod(src: Path, out_dir: Path, args: argparse.Namespace, chat_path: Path | None,
                 prefix: str = "") -> list[dict]:
     dur = duration(src)
-    loud = loudness_per_second(src, dur)
+    cache = out_dir / f"{src.stem}.glosnosc.json"
+    loud = None
+    if cache.exists():
+        try:
+            loud = json.loads(cache.read_text(encoding="utf-8"))
+            if len(loud) != int(dur) + 1:
+                loud = None
+            else:
+                log.info("Głośność z pamięci: %s", cache.name)
+        except (OSError, ValueError):
+            loud = None
+    if loud is None:
+        loud = loudness_per_second(src, dur)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        cache.write_text(json.dumps([round(x, 1) for x in loud]), encoding="utf-8")
     chat = load_chat(chat_path) if chat_path else None
     lol = None
     if args.zdarzenia_lol:
         lol = load_lol_events(Path(args.zdarzenia_lol), datetime.fromisoformat(args.poczatek_nagrania), len(loud))
     score, loud_ex, chat_ex = score_timeline(loud, chat, args.opoznienie_czatu, args.waga_czatu, lol)
-    peaks = pick_moments(score, args.ile, args.przed + args.po)
+    peaks = pick_moments(score, args.ile, args.przed + args.po, args.max_na_godzine)
     if not peaks:
         log.warning("%s: brak wyraźnych momentów (bez skoków głośności i czatu).", src.name)
         return []
@@ -248,6 +265,8 @@ def main() -> None:
     p.add_argument("--ile", type=int, default=30, help="ile momentów wyciąć z jednego nagrania (domyślnie 30)")
     p.add_argument("--przed", type=int, default=45, help="sekund kontekstu przed kulminacją (domyślnie 45)")
     p.add_argument("--po", type=int, default=15, help="sekund po kulminacji (domyślnie 15)")
+    p.add_argument("--max-na-godzine", type=int, default=3,
+                   help="najwyżej tyle momentów w jednej godzinie nagrania (0 = bez limitu; domyślnie 3)")
     p.add_argument("--opoznienie-czatu", type=float, default=8.0, help="o ile s czat spóźnia się za akcją")
     p.add_argument("--waga-czatu", type=float, default=1.0, help="waga czatu względem głośności")
     p.add_argument("--zdarzenia-lol", help="CSV z lol_logger.py (zabójstwa, multikille, smoki...); tylko dla 1 nagrania")
